@@ -24,6 +24,8 @@ export async function GET() {
         soreness: latest.soreness,
         energy: latest.energy,
         stress: latest.stress,
+        restingHeartRate: latest.restingHeartRate ?? null,
+        respiratoryRate: latest.respiratoryRate ?? null,
       };
       const e1rmMap: Record<string, number> = {};
       for (const r of e1rms) e1rmMap[r.exercise] = r.e1rmLbs;

@@ -129,3 +129,88 @@ export async function getSessionHistory(athleteId: string, limit = 20) {
     take: limit,
   });
 }
+
+// =============================================================================
+// PERSONAL RECORDS
+// =============================================================================
+
+/** Get all personal records for an athlete */
+export async function getPersonalRecords(athleteId: string) {
+  return prisma.personalRecord.findMany({
+    where: { athleteId },
+    orderBy: [{ exerciseName: "asc" }, { recordType: "asc" }, { achievedAt: "desc" }],
+  });
+}
+
+/** Get latest PR per exercise per type */
+export async function getLatestPRs(athleteId: string) {
+  const records = await prisma.personalRecord.findMany({
+    where: { athleteId },
+    orderBy: { achievedAt: "desc" },
+  });
+  const map = new Map<string, (typeof records)[0]>();
+  for (const r of records) {
+    const key = `${r.exerciseName}:${r.recordType}`;
+    if (!map.has(key)) map.set(key, r);
+  }
+  return Array.from(map.values());
+}
+
+/** Upsert a personal record */
+export async function upsertPersonalRecord(data: {
+  athleteId: string;
+  exerciseName: string;
+  recordType: string;
+  weightLbs: number;
+  reps?: number;
+  achievedAt?: Date;
+}) {
+  return prisma.personalRecord.create({
+    data: {
+      ...data,
+      reps: data.reps ?? 1,
+      achievedAt: data.achievedAt ?? new Date(),
+    },
+  });
+}
+
+// =============================================================================
+// PROGRESSION LOGS
+// =============================================================================
+
+/** Get progression logs for an exercise across a block */
+export async function getExerciseProgression(
+  athleteId: string,
+  exercise: string,
+  limit = 50
+) {
+  return prisma.progressionLog.findMany({
+    where: { athleteId, exerciseName: exercise },
+    orderBy: { recordedAt: "desc" },
+    take: limit,
+    include: { block: { select: { name: true, phase: true } } },
+  });
+}
+
+// =============================================================================
+// PROGRAM TEMPLATES
+// =============================================================================
+
+/** Get all program templates for an athlete */
+export async function getProgramTemplates(athleteId: string) {
+  return prisma.programTemplate.findMany({
+    where: { athleteId },
+    include: {
+      phases: {
+        orderBy: { order: "asc" },
+        include: {
+          days: {
+            orderBy: { dayNumber: "asc" },
+            include: { exercises: { orderBy: { order: "asc" } } },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}

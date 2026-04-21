@@ -47,6 +47,8 @@ export async function GET() {
         soreness: latest.soreness,
         energy: latest.energy,
         stress: latest.stress,
+        restingHeartRate: latest.restingHeartRate ?? null,
+        respiratoryRate: latest.respiratoryRate ?? null,
       };
       const hrvBaseline = calculateHrvBaseline(
         biometrics.map((e) => ({ hrvMs: e.hrvMs, date: e.date.toISOString() }))

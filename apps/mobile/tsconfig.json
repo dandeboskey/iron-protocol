@@ -1,0 +1,11 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@iron-protocol/core-logic": ["../../packages/core-logic/src"],
+      "@iron-protocol/core-logic/*": ["../../packages/core-logic/src/*"]
+    }
+  }
+}

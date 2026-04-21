@@ -12,6 +12,8 @@ export interface BiometricSnapshot {
   soreness: number | null; // 1-10, 10 = very sore
   energy: number | null; // 1-10
   stress: number | null; // 1-10, 10 = very stressed
+  restingHeartRate: number | null; // bpm
+  respiratoryRate: number | null; // breaths per minute
 }
 
 /** Athlete profile for scaling calculations */
@@ -30,6 +32,7 @@ export interface ReadinessResult {
     hrvComponent: number;
     sleepComponent: number;
     subjectiveComponent: number;
+    rhrComponent: number | null;
   };
 }
 

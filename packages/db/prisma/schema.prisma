@@ -7,8 +7,67 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+// =============================================================================
+// AUTH MODELS (NextAuth.js compatible)
+// =============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  athlete  Athlete?
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// =============================================================================
+// CORE ATHLETE MODEL
+// =============================================================================
+
 model Athlete {
   id            String   @id @default(cuid())
+  userId        String?  @unique
   name          String
   email         String   @unique
   bodyweightLbs Float
@@ -17,29 +76,45 @@ model Athlete {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  trainingBlocks TrainingBlock[]
-  biometrics     BiometricEntry[]
-  e1rmHistory    E1RMRecord[]
+  user              User?              @relation(fields: [userId], references: [id])
+  trainingBlocks    TrainingBlock[]
+  biometrics        BiometricEntry[]
+  e1rmHistory       E1RMRecord[]
+  equipmentProfiles EquipmentProfile[]
+  programTemplates  ProgramTemplate[]
+  progressionLogs   ProgressionLog[]
+  weeklySnapshots   WeeklySnapshot[]
+  personalRecords   PersonalRecord[]
+  dailyReadiness    DailyReadinessScore[]
 }
+
+// =============================================================================
+// TRAINING BLOCK & SESSION MODELS (existing)
+// =============================================================================
 
 model TrainingBlock {
   id          String      @id @default(cuid())
   athleteId   String
   name        String
-  phase       String      @default("HYPERTROPHY")
-  status      String      @default("ACTIVE")
+  phase       String      @default("HYPERTROPHY") // Phase: HYPERTROPHY | STRENGTH | PEAKING | DELOAD
+  status      String      @default("ACTIVE") // BlockStatus: ACTIVE | COMPLETED | PAUSED
   startDate   DateTime    @default(now())
   endDate     DateTime?
   weekCount   Int         @default(4)
   currentWeek Int         @default(1)
   currentDay  Int         @default(1)
+  templateId  String?     // optional link to ProgramTemplate that generated this block
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
-  athlete  Athlete           @relation(fields: [athleteId], references: [id])
-  sessions TrainingSession[]
+  athlete         Athlete          @relation(fields: [athleteId], references: [id])
+  template        ProgramTemplate? @relation(fields: [templateId], references: [id])
+  sessions        TrainingSession[]
+  progressionLogs ProgressionLog[]
+  weeklySnapshots WeeklySnapshot[]
 
   @@index([athleteId])
+  @@index([templateId])
 }
 
 model TrainingSession {
@@ -97,22 +172,59 @@ model CompletedSet {
   @@index([prescriptionId])
 }
 
+// =============================================================================
+// BIOMETRIC & HEALTH MODELS (expanded)
+// =============================================================================
+
 model BiometricEntry {
-  id           String   @id @default(cuid())
-  athleteId    String
-  date         DateTime @default(now())
-  hrvMs        Float?
-  sleepHours   Float?
-  sleepQuality Int?
-  mood         Int?
-  soreness     Int?
-  energy       Int?
-  stress       Int?
-  notes        String?
-  createdAt    DateTime @default(now())
+  id                String   @id @default(cuid())
+  athleteId         String
+  date              DateTime @default(now())
+  source            String   @default("MANUAL") // HealthMetricSource: MANUAL | APPLE_HEALTH | OURA | WHOOP
+  // Existing fields
+  hrvMs             Float?
+  sleepHours        Float?
+  sleepQuality      Int?     // 1-10 scale
+  mood              Int?     // 1-10 scale
+  soreness          Int?     // 1-10 scale
+  energy            Int?     // 1-10 scale
+  stress            Int?     // 1-10 scale
+  notes             String?
+  // New health metric fields
+  restingHeartRate  Float?   // bpm
+  respiratoryRate   Float?   // breaths per minute
+  bodyTemperature   Float?   // degrees Fahrenheit
+  bodyweightLbs     Float?   // daily weigh-in
+  createdAt         DateTime @default(now())
 
   athlete Athlete @relation(fields: [athleteId], references: [id])
 
+  @@index([athleteId])
+  @@index([date])
+  @@index([athleteId, date])
+}
+
+model DailyReadinessScore {
+  id                  String   @id @default(cuid())
+  athleteId           String
+  date                DateTime
+  compositeScore      Float    // 0.0 - 1.0 normalized readiness coefficient
+  // Breakdown components (each 0.0 - 1.0)
+  hrvComponent        Float?
+  sleepComponent      Float?
+  moodComponent       Float?
+  sorenessComponent   Float?
+  energyComponent     Float?
+  stressComponent     Float?
+  heartRateComponent  Float?
+  // Metadata
+  computedAt          DateTime @default(now())
+  biometricEntryId    String?  // optional link to source BiometricEntry
+  notes               String?  // auto-reg engine explanation
+
+  athlete Athlete @relation(fields: [athleteId], references: [id])
+
+  @@unique([athleteId, date])
   @@index([athleteId])
   @@index([date])
 }
@@ -122,7 +234,7 @@ model E1RMRecord {
   athleteId    String
   exercise     String
   e1rmLbs      Float
-  method       String   @default("EPLEY")
+  method       String   @default("EPLEY") // E1RMMethod: EPLEY | BRZYCKI | LOMBARDI | DIRECT
   sourceWeight Float?
   sourceReps   Int?
   recordedAt   DateTime @default(now())
@@ -131,4 +243,224 @@ model E1RMRecord {
 
   @@index([athleteId, exercise])
   @@index([recordedAt])
+}
+
+// =============================================================================
+// EQUIPMENT INVENTORY MODELS
+// =============================================================================
+
+model EquipmentProfile {
+  id        String   @id @default(cuid())
+  athleteId String
+  name      String   @default("Home Gym") // e.g., "Home Gym", "Commercial Gym"
+  isDefault Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  athlete   Athlete    @relation(fields: [athleteId], references: [id])
+  barbells  Barbell[]
+  plates    PlateInventory[]
+  dumbbells Dumbbell[]
+  machines  Machine[]
+
+  @@index([athleteId])
+}
+
+model Barbell {
+  id                 String  @id @default(cuid())
+  equipmentProfileId String
+  name               String  // e.g., "Standard Olympic", "Women's Olympic", "Safety Squat Bar"
+  type               String  @default("STANDARD") // BarbellType: STANDARD | WOMENS | SPECIALTY
+  weightLbs          Float   @default(45) // 45, 35, or specialty bar weight
+  lengthIn           Float?  // optional length in inches
+  notes              String?
+
+  equipmentProfile EquipmentProfile @relation(fields: [equipmentProfileId], references: [id], onDelete: Cascade)
+
+  @@index([equipmentProfileId])
+}
+
+model PlateInventory {
+  id                 String @id @default(cuid())
+  equipmentProfileId String
+  weightLbs          Float  // 45, 35, 25, 10, 5, 2.5, 1.25, etc.
+  pairCount          Int    @default(1) // number of PAIRS available
+  type               String @default("IRON") // PlateType: IRON | BUMPER | CALIBRATED
+
+  equipmentProfile EquipmentProfile @relation(fields: [equipmentProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([equipmentProfileId, weightLbs, type])
+  @@index([equipmentProfileId])
+}
+
+model Dumbbell {
+  id                 String @id @default(cuid())
+  equipmentProfileId String
+  weightLbs          Float  // individual dumbbell weight
+  isAdjustable       Boolean @default(false)
+
+  equipmentProfile EquipmentProfile @relation(fields: [equipmentProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([equipmentProfileId, weightLbs])
+  @@index([equipmentProfileId])
+}
+
+model Machine {
+  id                 String  @id @default(cuid())
+  equipmentProfileId String
+  name               String  // e.g., "Lat Pulldown", "Leg Press"
+  maxWeightLbs       Float   // max stack/loadable weight
+  incrementLbs       Float   @default(10) // weight increment step
+  notes              String?
+
+  equipmentProfile EquipmentProfile @relation(fields: [equipmentProfileId], references: [id], onDelete: Cascade)
+
+  @@index([equipmentProfileId])
+}
+
+// =============================================================================
+// PROGRAM TEMPLATE MODELS
+// =============================================================================
+
+model ProgramTemplate {
+  id            String   @id @default(cuid())
+  athleteId     String
+  name          String   // e.g., "Juggernaut Method", "5/3/1 BBB"
+  description   String?
+  durationWeeks Int      // total program length in weeks
+  phasesCount   Int      // number of distinct phases
+  source        String   @default("MANUAL") // ProgramSource: MANUAL | SPREADSHEET_IMPORT | AI_GENERATED
+  isPublic      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  athlete        Athlete          @relation(fields: [athleteId], references: [id])
+  phases         ProgramPhase[]
+  trainingBlocks TrainingBlock[]
+
+  @@index([athleteId])
+}
+
+model ProgramPhase {
+  id         String @id @default(cuid())
+  templateId String
+  name       String // e.g., "Accumulation", "Intensification", "Realization"
+  phaseType  String // Phase: HYPERTROPHY | STRENGTH | PEAKING | DELOAD
+  weekCount  Int    // how many weeks this phase spans
+  order      Int    // phase order within template (1-indexed)
+
+  template ProgramTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  days     ProgramDay[]
+
+  @@unique([templateId, order])
+  @@index([templateId])
+}
+
+model ProgramDay {
+  id          String  @id @default(cuid())
+  phaseId     String
+  dayNumber   Int     // day within the week (1 = Monday, 7 = Sunday)
+  label       String  // e.g., "Upper A", "Heavy Squat", "Bench Volume"
+  muscleFocus String? // e.g., "UPPER", "LOWER", "FULL_BODY", "PUSH", "PULL"
+
+  phase     ProgramPhase      @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  exercises ProgramExercise[]
+
+  @@unique([phaseId, dayNumber])
+  @@index([phaseId])
+}
+
+model ProgramExercise {
+  id            String  @id @default(cuid())
+  dayId         String
+  exerciseName  String  // e.g., "Competition Squat", "Bench Press", "RDL"
+  sets          Int
+  reps          Int     // target reps (can represent rep range minimum)
+  repsMax       Int?    // optional upper bound for rep range (e.g., 8-12 -> reps=8, repsMax=12)
+  rpe           Float?  // target RPE (6.0 - 10.0)
+  intensityPct  Float?  // percent of e1RM (0.0 - 1.0), e.g., 0.75 = 75%
+  order         Int     // exercise order within the day
+  isAccessory   Boolean @default(false)
+  restSeconds   Int?    // prescribed rest between sets
+  tempoNotation String? // e.g., "3-1-2-0" (eccentric-pause-concentric-pause)
+  notes         String?
+
+  day ProgramDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+
+  @@unique([dayId, order])
+  @@index([dayId])
+}
+
+// =============================================================================
+// PROGRESSIVE OVERLOAD TRACKING MODELS
+// =============================================================================
+
+model ProgressionLog {
+  id           String   @id @default(cuid())
+  athleteId    String
+  blockId      String
+  exerciseName String
+  weekNumber   Int
+  // Volume metrics
+  totalSets    Int      // total working sets performed
+  totalReps    Int      // total reps performed
+  volumeLoad   Float    // sum of (weight x reps) across all sets
+  tonnage      Float    // total weight moved in lbs (same as volumeLoad, explicit for clarity)
+  avgIntensity Float?   // average %e1RM across sets
+  estimatedE1rm Float?  // estimated 1RM based on best set that week
+  avgRPE       Float?   // average RPE across sets
+  recordedAt   DateTime @default(now())
+
+  athlete Athlete       @relation(fields: [athleteId], references: [id])
+  block   TrainingBlock @relation(fields: [blockId], references: [id])
+
+  @@unique([blockId, exerciseName, weekNumber])
+  @@index([athleteId, exerciseName])
+  @@index([blockId])
+}
+
+model WeeklySnapshot {
+  id              String   @id @default(cuid())
+  athleteId       String
+  blockId         String
+  weekNumber      Int
+  // Aggregated metrics
+  totalVolume     Float    // total volume load across all exercises
+  totalTonnage    Float    // total tonnage for the week
+  totalSets       Int      // total working sets
+  avgIntensityPct Float?   // average intensity as %e1RM
+  avgRPE          Float?   // average RPE for the week
+  inol            Float?   // Intensity x Number Of Lifts (for main compounds)
+  fatigueIndex    Float?   // computed fatigue metric (0.0 - 1.0)
+  // Context
+  readinessAvg    Float?   // average daily readiness score for the week
+  bodyweightAvg   Float?   // average bodyweight for the week
+  notes           String?
+  computedAt      DateTime @default(now())
+
+  athlete Athlete       @relation(fields: [athleteId], references: [id])
+  block   TrainingBlock @relation(fields: [blockId], references: [id])
+
+  @@unique([blockId, weekNumber])
+  @@index([athleteId])
+  @@index([blockId])
+}
+
+model PersonalRecord {
+  id           String   @id @default(cuid())
+  athleteId    String
+  exerciseName String
+  recordType   String   // PRType: ONE_RM | THREE_RM | FIVE_RM | MAX_VOLUME | MAX_TONNAGE
+  weightLbs    Float    // the weight for the PR
+  reps         Int?     // reps performed (null for tonnage-based PRs)
+  volumeLoad   Float?   // for MAX_VOLUME / MAX_TONNAGE records
+  isAllTime    Boolean  @default(false) // true = all-time PR, false = recent/block PR
+  previousBest Float?   // previous record value for delta tracking
+  achievedAt   DateTime @default(now())
+
+  athlete Athlete @relation(fields: [athleteId], references: [id])
+
+  @@index([athleteId, exerciseName])
+  @@index([athleteId, exerciseName, recordType])
+  @@index([achievedAt])
 }
