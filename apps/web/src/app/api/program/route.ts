@@ -24,6 +24,7 @@ export async function POST(request: Request) {
         athleteId: athlete.id,
         name: body.name,
         durationWeeks: body.durationWeeks,
+        phasesCount: (body.phases ?? []).length,
         source: "MANUAL",
         phases: {
           create: body.phases.map((phase: any, pIdx: number) => ({

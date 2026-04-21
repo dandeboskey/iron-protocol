@@ -23,6 +23,8 @@ export default function WorkoutPage() {
     rpe: "",
   });
   const [logging, setLogging] = useState(false);
+  const [completing, setCompleting] = useState(false);
+  const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
     fetch("/api/workout")
@@ -47,6 +49,23 @@ export default function WorkoutPage() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  async function finishWorkout() {
+    if (!workout?.session?.id) return;
+    setCompleting(true);
+    try {
+      const res = await fetch("/api/session/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: workout.session.id }),
+      });
+      if (res.ok) setCompleted(true);
+    } catch (e) {
+      console.error("Finish workout error:", e);
+    } finally {
+      setCompleting(false);
+    }
+  }
 
   async function logSet() {
     if (!workout?.session?.id || !currentSet.weightLbs || !currentSet.reps) return;
@@ -102,6 +121,22 @@ export default function WorkoutPage() {
   }
 
   const prescriptions = workout.session.prescriptions || [];
+  const allSetsLogged =
+    prescriptions.length > 0 &&
+    prescriptions.every((p: any) => (loggedSets[p.id]?.length ?? 0) >= p.prescribedSets);
+
+  if (completed) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+        <div className="text-6xl mb-6">🏋️</div>
+        <h2 className="text-3xl font-black text-iron-50 mb-2">Session Complete</h2>
+        <p className="text-iron-400 mb-8">Block day advanced. Rest up.</p>
+        <a href="/block" className="btn-primary px-8 py-3 text-lg">
+          View Block Progress
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className="pb-20 md:pb-6">
@@ -125,6 +160,20 @@ export default function WorkoutPage() {
           )}
         </div>
       </div>
+
+      {/* Finish button */}
+      {allSetsLogged && (
+        <div className="mb-6 p-4 bg-green-950 border border-green-800 rounded-xl text-center">
+          <p className="text-green-400 font-semibold mb-3">All sets logged.</p>
+          <button
+            onClick={finishWorkout}
+            disabled={completing}
+            className="btn-primary w-full py-4 text-lg bg-green-600 hover:bg-green-500"
+          >
+            {completing ? "Saving..." : "Finish Workout"}
+          </button>
+        </div>
+      )}
 
       {/* Exercise list */}
       <div className="space-y-4">

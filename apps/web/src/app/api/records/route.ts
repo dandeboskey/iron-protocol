@@ -19,11 +19,10 @@ export async function POST(request: Request) {
     if (!athlete) return NextResponse.json({ error: "No athlete" }, { status: 404 });
     const record = await upsertPersonalRecord({
       athleteId: athlete.id,
-      exercise: body.exercise,
+      exerciseName: body.exerciseName ?? body.exercise,
       recordType: body.recordType,
       weightLbs: body.weightLbs,
       reps: body.reps ?? 1,
-      notes: body.notes ?? undefined,
     });
     return NextResponse.json({ record });
   } catch (e) {
