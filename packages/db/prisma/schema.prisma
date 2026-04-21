@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Athlete {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  bodyweightLbs Float
+  heightIn      Float?
+  experienceYrs Float    @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  trainingBlocks TrainingBlock[]
+  biometrics     BiometricEntry[]
+  e1rmHistory    E1RMRecord[]
+}
+
+model TrainingBlock {
+  id          String      @id @default(cuid())
+  athleteId   String
+  name        String
+  phase       String      @default("HYPERTROPHY")
+  status      String      @default("ACTIVE")
+  startDate   DateTime    @default(now())
+  endDate     DateTime?
+  weekCount   Int         @default(4)
+  currentWeek Int         @default(1)
+  currentDay  Int         @default(1)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  athlete  Athlete           @relation(fields: [athleteId], references: [id])
+  sessions TrainingSession[]
+
+  @@index([athleteId])
+}
+
+model TrainingSession {
+  id             String    @id @default(cuid())
+  blockId        String
+  weekNumber     Int
+  dayNumber      Int
+  scheduledDate  DateTime  @default(now())
+  completedAt    DateTime?
+  readinessScore Float?
+  readinessCoeff Float     @default(1.0)
+  autoRegNote    String?
+  createdAt      DateTime  @default(now())
+
+  block         TrainingBlock        @relation(fields: [blockId], references: [id])
+  prescriptions ExercisePrescription[]
+  completedSets CompletedSet[]
+
+  @@index([blockId])
+  @@index([scheduledDate])
+}
+
+model ExercisePrescription {
+  id              String  @id @default(cuid())
+  sessionId       String
+  exerciseName    String
+  exerciseOrder   Int
+  prescribedSets  Int
+  prescribedReps  Int
+  prescribedRPE   Float
+  percentOfE1RM   Float?
+  targetWeightLbs Float?
+  isAccessory     Boolean @default(false)
+
+  session       TrainingSession @relation(fields: [sessionId], references: [id])
+  completedSets CompletedSet[]
+
+  @@index([sessionId])
+}
+
+model CompletedSet {
+  id              String   @id @default(cuid())
+  sessionId       String
+  prescriptionId  String
+  setNumber       Int
+  reps            Int
+  weightLbs       Float
+  rpe             Float?
+  completedAt     DateTime @default(now())
+
+  session      TrainingSession      @relation(fields: [sessionId], references: [id])
+  prescription ExercisePrescription @relation(fields: [prescriptionId], references: [id])
+
+  @@index([sessionId])
+  @@index([prescriptionId])
+}
+
+model BiometricEntry {
+  id           String   @id @default(cuid())
+  athleteId    String
+  date         DateTime @default(now())
+  hrvMs        Float?
+  sleepHours   Float?
+  sleepQuality Int?
+  mood         Int?
+  soreness     Int?
+  energy       Int?
+  stress       Int?
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  athlete Athlete @relation(fields: [athleteId], references: [id])
+
+  @@index([athleteId])
+  @@index([date])
+}
+
+model E1RMRecord {
+  id           String   @id @default(cuid())
+  athleteId    String
+  exercise     String
+  e1rmLbs      Float
+  method       String   @default("EPLEY")
+  sourceWeight Float?
+  sourceReps   Int?
+  recordedAt   DateTime @default(now())
+
+  athlete Athlete @relation(fields: [athleteId], references: [id])
+
+  @@index([athleteId, exercise])
+  @@index([recordedAt])
+}

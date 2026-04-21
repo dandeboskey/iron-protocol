@@ -1,0 +1,7 @@
+Domain: Next.js Web Client & API Gateway
+Directives:
+
+1. Framework: Use Next.js (App Router), React Server Components (RSC), and Server Actions. Optimize for performance and offline-first PWA capabilities where possible.
+2. Boundary Enforcement: This package is the presentation and routing layer ONLY. Do not write complex sports science math, e1RM calculations, or biometric parsing logic here. Import all business logic from @iron-protocol/core-logic and all data access from @iron-protocol/db.
+3. Component Design: Build stateless, reusable UI components. Assume the user is interacting with the app in a gym environment—prioritize high contrast, large touch targets, and frictionless UX for logging a top set (Weight + Reps + RPE).
+4. API Routes: Keep API routes extremely thin. They should primarily handle auth, receive requests, call the appropriate function from @iron-protocol/core-logic or @iron-protocol/integrations, and return the response.

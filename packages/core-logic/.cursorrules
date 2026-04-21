@@ -1,0 +1,7 @@
+Domain: Core Sports Science & Periodization Engine
+Directives:
+
+1. Pure Functions Only: This package must contain strictly pure, deterministic TypeScript functions. Absolutely zero side-effects, no direct database queries, and no external API requests.
+2. Mathematical Precision: Calculate the Readiness Coefficient (Rc) and dynamic Estimated 1-Rep Max (e1RM) using established formulas (e.g., Epley). Clearly document expected inputs, outputs, and mathematical boundaries.
+3. Edge-Case Design: Always design logic to handle elite-level performance metrics (e.g., a 195 lb athlete pulling a 705 lb deadlift). Central Nervous System (CNS) fatigue curves and Maximum Recoverable Volume (MRV) modifiers must scale non-linearly for massive absolute loads.
+4. State Machine Integrity: The logic governing block periodization (Hypertrophy → Strength → Peaking) must strictly evaluate incoming state objects and return newly mutated state objects. Ensure volume adjustments mathematically respect the user's Minimum Effective Volume (MEV).

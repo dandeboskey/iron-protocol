@@ -1,0 +1,7 @@
+Domain: Database Architecture & Schema Design
+Directives:
+
+1. Relational Strictness: We are managing a highly structured macrocycle. Ensure strong foreign key constraints and referential integrity between Users, Macrocycles, Weeks, and Sessions.
+2. Time-Series Optimization: We are storing high-frequency biometric data alongside static workout data. Design queries, tables, and indexes to efficiently calculate trailing 7-day and 30-day rolling averages for HRV and sleep metrics without bottlenecking CRUD operations.
+3. Historical Immutability: When a user completes a workout, that session's data (actual weight lifted, actual RPE) becomes an immutable historical record. Schema updates or plan recalculations must only alter future, pending sessions.
+4. ORM Standards: Output all schema designs, migrations, and query examples using the project's designated ORM (e.g., Prisma or Drizzle). Abstract complex queries into reusable data-access functions.

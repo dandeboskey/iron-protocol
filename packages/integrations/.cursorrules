@@ -1,0 +1,7 @@
+Domain: Cloud-to-Cloud API Services & Biometric Ingestion
+Directives:
+
+1. Data Normalization: External wearable APIs (Oura, WHOOP, Health Connect) return fragmented JSON. Your primary role is to write robust adapters that transform vendor-specific sleep architecture and HRV payloads into our standardized, internal TypeScript interfaces before returning the data.
+2. Resilience Engineering: Assume all third-party REST APIs are flaky and subject to rate limits. Implement strict retry logic with exponential backoff and circuit breakers.
+3. OAuth 2.0 Management: When writing authentication flows, ensure secure handling of access and refresh tokens.
+4. Strict Isolation: Do not calculate readiness scores or alter training volume in this package. This domain strictly handles fetching, normalizing, and abstracting external time-series data.
