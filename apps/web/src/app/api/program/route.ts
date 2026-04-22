@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+import { getSessionAthlete } from "@/lib/getSessionAthlete";
 import { prisma } from "@iron-protocol/db";
-import { getActiveAthlete, getProgramTemplates } from "@iron-protocol/db/queries";
+import { getProgramTemplates } from "@iron-protocol/db/queries";
 
 export async function GET() {
   try {
-    const athlete = await getActiveAthlete();
+    const athlete = await getSessionAthlete();
     if (!athlete) return NextResponse.json({ error: "No athlete" }, { status: 404 });
     const templates = await getProgramTemplates(athlete.id);
     return NextResponse.json({ templates });
@@ -16,7 +17,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const athlete = await getActiveAthlete();
+    const athlete = await getSessionAthlete();
     if (!athlete) return NextResponse.json({ error: "No athlete" }, { status: 404 });
 
     const template = await prisma.programTemplate.create({

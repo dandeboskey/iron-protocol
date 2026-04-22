@@ -17,6 +17,10 @@
       "infoPlist": {
         "NSHealthShareUsageDescription": "Iron Protocol uses your health data to optimize your training readiness and auto-regulate workout intensity.",
         "NSHealthUpdateUsageDescription": "Iron Protocol records your workout data to Apple Health."
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.access": []
       }
     },
     "plugins": [

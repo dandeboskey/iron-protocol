@@ -25,4 +25,21 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  events: {
+    async createUser({ user }) {
+      // Auto-provision an Athlete record for every new Google sign-up.
+      // bodyweightLbs and experienceYrs are defaults — user updates them in /profile.
+      await prisma.athlete.upsert({
+        where: { email: user.email! },
+        update: { userId: user.id },
+        create: {
+          userId: user.id,
+          name: user.name ?? "New Athlete",
+          email: user.email!,
+          bodyweightLbs: 185,
+          experienceYrs: 1,
+        },
+      });
+    },
+  },
 };

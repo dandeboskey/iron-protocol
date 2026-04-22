@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { logCompletedSet, recordE1RM, getActiveAthlete } from "@iron-protocol/db/queries";
+import { getSessionAthlete } from "@/lib/getSessionAthlete";
+import { logCompletedSet, recordE1RM } from "@iron-protocol/db/queries";
 import { prisma } from "@iron-protocol/db";
 import { compositeE1RM } from "@iron-protocol/core-logic";
 
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
         where: { id: prescriptionId },
       });
       if (prescription) {
-        const athlete = await getActiveAthlete();
+        const athlete = await getSessionAthlete();
         if (athlete) {
           await recordE1RM({
             athleteId: athlete.id,

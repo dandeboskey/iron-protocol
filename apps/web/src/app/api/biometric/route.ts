@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { getActiveAthlete, getTrailingBiometrics, createBiometricEntry, getAllLatestE1RMs } from "@iron-protocol/db/queries";
+import { getSessionAthlete } from "@/lib/getSessionAthlete";
+import { getTrailingBiometrics, createBiometricEntry, getAllLatestE1RMs } from "@iron-protocol/db/queries";
 import { calculateReadiness, calculateHrvBaseline } from "@iron-protocol/core-logic";
 import type { BiometricSnapshot, AthleteProfile } from "@iron-protocol/core-logic";
 
 export async function GET() {
   try {
-    const athlete = await getActiveAthlete();
+    const athlete = await getSessionAthlete();
     if (!athlete) {
       return NextResponse.json({ error: "No athlete found" }, { status: 404 });
     }
@@ -50,7 +51,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const athlete = await getActiveAthlete();
+    const athlete = await getSessionAthlete();
     if (!athlete) {
       return NextResponse.json({ error: "No athlete found" }, { status: 404 });
     }

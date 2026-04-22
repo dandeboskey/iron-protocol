@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
+import { getSessionAthlete } from "@/lib/getSessionAthlete";
 import { prisma } from "@iron-protocol/db";
-import { getActiveAthlete, getAthleteWithBlock } from "@iron-protocol/db/queries";
+import { getAthleteWithBlock } from "@iron-protocol/db/queries";
 import { macrocycleProgress, evaluateTransition } from "@iron-protocol/core-logic";
 import type { BlockState } from "@iron-protocol/core-logic";
 
 export async function GET() {
   try {
-    const athlete = await getActiveAthlete();
+    const athlete = await getSessionAthlete();
     if (!athlete) {
       return NextResponse.json({ error: "No athlete found" }, { status: 404 });
     }

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+import { getSessionAthlete } from "@/lib/getSessionAthlete";
 import { prisma } from "@iron-protocol/db";
-import { getActiveAthlete, getAllLatestE1RMs } from "@iron-protocol/db/queries";
+import { getAllLatestE1RMs } from "@iron-protocol/db/queries";
 
 export async function GET() {
   try {
-    const athlete = await getActiveAthlete();
+    const athlete = await getSessionAthlete();
     if (!athlete) {
       return NextResponse.json({ error: "No athlete found" }, { status: 404 });
     }
@@ -18,7 +19,7 @@ export async function GET() {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const athlete = await getActiveAthlete();
+    const athlete = await getSessionAthlete();
     if (!athlete) {
       return NextResponse.json({ error: "No athlete found" }, { status: 404 });
     }

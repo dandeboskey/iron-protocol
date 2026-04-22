@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { getSessionAthlete } from "@/lib/getSessionAthlete";
 import { prisma } from "@iron-protocol/db";
-import { getActiveAthlete, getAthleteWithBlock, getTrailingBiometrics, getAllLatestE1RMs, getTodaySession } from "@iron-protocol/db/queries";
+import { getAthleteWithBlock, getTrailingBiometrics, getAllLatestE1RMs, getTodaySession } from "@iron-protocol/db/queries";
 import {
   calculateReadiness,
   calculateHrvBaseline,
@@ -12,7 +13,7 @@ import type { BiometricSnapshot, AthleteProfile, BasePrescription } from "@iron-
 
 export async function GET() {
   try {
-    const athlete = await getActiveAthlete();
+    const athlete = await getSessionAthlete();
     if (!athlete) {
       return NextResponse.json({ error: "No athlete found" }, { status: 404 });
     }

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { getActiveAthlete, getLatestPRs, upsertPersonalRecord } from "@iron-protocol/db/queries";
+import { getSessionAthlete } from "@/lib/getSessionAthlete";
+import { getLatestPRs, upsertPersonalRecord } from "@iron-protocol/db/queries";
 
 export async function GET() {
   try {
-    const athlete = await getActiveAthlete();
+    const athlete = await getSessionAthlete();
     if (!athlete) return NextResponse.json({ error: "No athlete" }, { status: 404 });
     const records = await getLatestPRs(athlete.id);
     return NextResponse.json({ records });
@@ -15,7 +16,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const athlete = await getActiveAthlete();
+    const athlete = await getSessionAthlete();
     if (!athlete) return NextResponse.json({ error: "No athlete" }, { status: 404 });
     const record = await upsertPersonalRecord({
       athleteId: athlete.id,
