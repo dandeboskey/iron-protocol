@@ -7,6 +7,8 @@ export default function ProfilePage() {
   const [e1rms, setE1rms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
     bodyweightLbs: "",
@@ -35,20 +37,53 @@ export default function ProfilePage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
+    setSavedAt(null);
+
+    const name = form.name.trim();
+    if (!name) {
+      setError("Name is required.");
+      return;
+    }
+    const bw = Number(form.bodyweightLbs);
+    if (!Number.isFinite(bw) || bw < 50 || bw > 600) {
+      setError("Bodyweight must be between 50 and 600 lbs.");
+      return;
+    }
+    const exp = Number(form.experienceYrs);
+    if (!Number.isFinite(exp) || exp < 0 || exp > 60) {
+      setError("Experience must be between 0 and 60 years.");
+      return;
+    }
+    const height = form.heightIn ? Number(form.heightIn) : null;
+    if (height != null && (!Number.isFinite(height) || height < 36 || height > 96)) {
+      setError("Height must be between 36 and 96 inches.");
+      return;
+    }
+
     setSaving(true);
     try {
-      await fetch("/api/athlete", {
+      const res = await fetch("/api/athlete", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: form.name,
-          bodyweightLbs: Number(form.bodyweightLbs),
-          heightIn: form.heightIn ? Number(form.heightIn) : null,
-          experienceYrs: Number(form.experienceYrs),
+          name,
+          bodyweightLbs: bw,
+          heightIn: height,
+          experienceYrs: exp,
         }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to save profile.");
+        return;
+      }
+      const data = await res.json();
+      setAthlete(data.athlete);
+      setSavedAt(Date.now());
     } catch (err) {
       console.error(err);
+      setError("Network error. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -62,6 +97,8 @@ export default function ProfilePage() {
     );
   }
 
+  const showSaved = savedAt != null && Date.now() - savedAt < 4000;
+
   return (
     <div className="pb-20 md:pb-6 space-y-6">
       <h1 className="text-2xl font-bold">Athlete Profile</h1>
@@ -74,6 +111,7 @@ export default function ProfilePage() {
             className="input-field"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
+            required
           />
         </div>
         <div className="grid grid-cols-3 gap-4">
@@ -81,15 +119,22 @@ export default function ProfilePage() {
             <label className="label">Bodyweight (lbs)</label>
             <input
               type="number"
+              min={50}
+              max={600}
+              step="0.1"
               className="input-field"
               value={form.bodyweightLbs}
               onChange={(e) => setForm({ ...form, bodyweightLbs: e.target.value })}
+              required
             />
           </div>
           <div>
             <label className="label">Height (in)</label>
             <input
               type="number"
+              min={36}
+              max={96}
+              step="0.1"
               className="input-field"
               value={form.heightIn}
               onChange={(e) => setForm({ ...form, heightIn: e.target.value })}
@@ -99,13 +144,24 @@ export default function ProfilePage() {
             <label className="label">Experience (yrs)</label>
             <input
               type="number"
+              min={0}
+              max={60}
               step="0.5"
               className="input-field"
               value={form.experienceYrs}
               onChange={(e) => setForm({ ...form, experienceYrs: e.target.value })}
+              required
             />
           </div>
         </div>
+
+        {error && (
+          <p className="text-sm text-red-400 bg-red-950/40 border border-red-900 rounded px-3 py-2">{error}</p>
+        )}
+        {showSaved && (
+          <p className="text-sm text-green-400 bg-green-950/40 border border-green-900 rounded px-3 py-2">Saved.</p>
+        )}
+
         <button type="submit" className="btn-primary" disabled={saving}>
           {saving ? "Saving..." : "Save Profile"}
         </button>
