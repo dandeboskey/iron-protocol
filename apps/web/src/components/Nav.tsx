@@ -19,6 +19,17 @@ const desktopNavItems = [
   { href: "/workout", label: "Workout" },
   { href: "/records", label: "PRs" },
   { href: "/block", label: "Block" },
+  { href: "/progress", label: "Progress" },
+  { href: "/program", label: "Programs" },
+  { href: "/history", label: "History" },
+  { href: "/connect", label: "Connect" },
+  { href: "/profile", label: "Profile" },
+];
+
+/** Mobile header secondary links — routes not reachable from the 5-tab bottom nav */
+const mobileSecondaryLinks = [
+  { href: "/progress", label: "Progress" },
+  { href: "/program", label: "Programs" },
   { href: "/history", label: "History" },
   { href: "/connect", label: "Connect" },
   { href: "/profile", label: "Profile" },
@@ -57,11 +68,26 @@ export default function Nav() {
       </nav>
 
       {/* Mobile header */}
-      <div className="md:hidden border-b border-iron-800 bg-iron-950 px-4 py-3">
-        <Link href="/" className="text-lg font-bold tracking-tight">
+      <div className="md:hidden border-b border-iron-800 bg-iron-950 px-4 py-3 space-y-2">
+        <Link href="/" className="text-lg font-bold tracking-tight block">
           <span className="text-accent">IRON</span>
           <span className="text-iron-300 ml-1">PROTOCOL</span>
         </Link>
+        <div className="flex gap-1 overflow-x-auto no-scrollbar -mx-1 px-1">
+          {mobileSecondaryLinks.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`text-xs px-3 py-1 rounded-full whitespace-nowrap border transition-colors ${
+                pathname === item.href
+                  ? "bg-iron-800 text-iron-100 border-iron-700"
+                  : "text-iron-400 border-iron-800 hover:text-iron-200"
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Mobile bottom nav */}
