@@ -32,7 +32,7 @@ export async function POST(request: Request) {
             name: phase.name,
             phaseType: phase.phaseType,
             weekCount: phase.weekCount,
-            phaseOrder: pIdx + 1,
+            order: pIdx + 1,
             days: {
               create: (phase.days || []).map((day: any) => ({
                 dayNumber: day.dayNumber,
@@ -41,11 +41,11 @@ export async function POST(request: Request) {
                 exercises: {
                   create: (day.exercises || []).map((ex: any, eIdx: number) => ({
                     exerciseName: ex.exerciseName,
-                    exerciseOrder: eIdx + 1,
+                    order: eIdx + 1,
                     sets: ex.sets,
                     reps: ex.reps,
                     rpe: ex.rpe || null,
-                    percentOfE1RM: ex.percentOfE1RM || null,
+                    intensityPct: ex.percentOfE1RM || null,
                     isAccessory: ex.isAccessory || false,
                   })),
                 },
