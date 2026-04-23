@@ -37,6 +37,7 @@ export default function ConnectPage() {
     },
   });
   const [simulating, setSimulating] = useState<string | null>(null);
+  const [oauthNotice, setOauthNotice] = useState<string | null>(null);
 
   async function simulateImport(source: string) {
     setSimulating(source);
@@ -74,8 +75,10 @@ export default function ConnectPage() {
   }
 
   function handleConnect(source: string) {
-    // In production, this would initiate OAuth 2.0 flow
-    alert(`OAuth 2.0 flow for ${source} would open here.\n\nFor now, use "Simulate Import" to test with mock data.`);
+    // Real OAuth flow is owned by a separate work stream; show an inline
+    // notice instead of a jarring alert() so users know to use Simulate.
+    setOauthNotice(source);
+    setTimeout(() => setOauthNotice((cur) => (cur === source ? null : cur)), 4000);
   }
 
   return (
@@ -136,6 +139,11 @@ export default function ConnectPage() {
                  "Simulate Import"}
               </button>
             </div>
+            {oauthNotice === key && (
+              <p className="text-xs text-amber-300 bg-amber-950/40 border border-amber-900 rounded px-3 py-2 mt-3">
+                OAuth flow for {device.name} isn't wired up yet. Use "Simulate Import" to test with mock data.
+              </p>
+            )}
           </div>
         ))}
       </div>
