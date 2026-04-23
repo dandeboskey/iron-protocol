@@ -1,22 +1,41 @@
 import { getServerSession } from "next-auth";
+import { decode } from "next-auth/jwt";
+import { headers } from "next/headers";
 import { authOptions } from "./auth";
 import { prisma } from "@iron-protocol/db";
 
 /**
- * Returns the Athlete for the currently authenticated user.
- * Falls back to the first athlete in dev when no session exists
- * (seed data / unauthenticated API calls during local testing).
+ * Resolves the current user id from either source:
+ *   1. Web: NextAuth session cookie (getServerSession reads it automatically)
+ *   2. Mobile: `Authorization: Bearer <jwt>` header set by the Expo app
+ *
+ * Both tokens are signed with NEXTAUTH_SECRET, so the same decode path works.
  */
-export async function getSessionAthlete() {
+async function getAuthenticatedUserId(): Promise<string | null> {
   const session = await getServerSession(authOptions);
+  if (session?.user?.id) return session.user.id;
 
-  if (session?.user?.id) {
-    const athlete = await prisma.athlete.findUnique({
-      where: { userId: session.user.id },
-    });
-    if (athlete) return athlete;
+  // Mobile bearer-token path
+  const auth = headers().get("authorization");
+  if (auth?.startsWith("Bearer ")) {
+    const token = auth.slice(7);
+    try {
+      const decoded = await decode({
+        token,
+        secret: process.env.NEXTAUTH_SECRET!,
+      });
+      if (decoded?.uid) return decoded.uid as string;
+      if (decoded?.sub) return decoded.sub;
+    } catch {
+      return null;
+    }
   }
+  return null;
+}
 
-  // Dev fallback: return seed athlete so the app works without a login
-  return prisma.athlete.findFirst({ orderBy: { createdAt: "asc" } });
+/** Returns the Athlete linked to the current user (web or mobile), or null. */
+export async function getSessionAthlete() {
+  const userId = await getAuthenticatedUserId();
+  if (!userId) return null;
+  return prisma.athlete.findUnique({ where: { userId } });
 }

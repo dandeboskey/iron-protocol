@@ -3,8 +3,9 @@ import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, Alert, ActivityIndicator,
 } from "react-native";
-import { getAthlete, updateAthlete } from "../src/services/api";
-import { requestHealthKitPermissions, isHealthKitAvailable } from "../src/services/healthkit";
+import { getAthlete, updateAthlete } from "../../src/services/api";
+import { requestHealthKitPermissions, isHealthKitAvailable } from "../../src/services/healthkit";
+import { useAuth } from "../../src/services/auth";
 
 const C = {
   bg: "#18181b", card: "#393940", border: "#41414a",
@@ -13,6 +14,7 @@ const C = {
 };
 
 export default function ProfileScreen() {
+  const { signOut, user } = useAuth();
   const [athlete, setAthlete] = useState<any>(null);
   const [e1rms, setE1rms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,6 +121,32 @@ export default function ProfileScreen() {
           ))}
         </View>
       )}
+
+      <View style={{ marginTop: 32, marginBottom: 100 }}>
+        {user && (
+          <Text style={{ color: C.muted, fontSize: 12, textAlign: "center", marginBottom: 12 }}>
+            Signed in as {user.email}
+          </Text>
+        )}
+        <TouchableOpacity
+          onPress={() => {
+            Alert.alert("Sign out?", "You'll need to sign in again to resume.", [
+              { text: "Cancel", style: "cancel" },
+              { text: "Sign out", style: "destructive", onPress: signOut },
+            ]);
+          }}
+          style={{
+            backgroundColor: C.card,
+            borderWidth: 1,
+            borderColor: C.border,
+            paddingVertical: 14,
+            borderRadius: 10,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ color: C.accent, fontWeight: "600", fontSize: 15 }}>Sign out</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }

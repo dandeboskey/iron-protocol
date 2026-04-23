@@ -1,18 +1,30 @@
 /**
- * API client for Iron Protocol backend.
- * In development, the Next.js backend runs on the same machine.
- * In production, this would be the deployed API URL.
+ * API client for the Iron Protocol backend.
+ *
+ * - Base URL is read from EXPO_PUBLIC_API_BASE (set in app.json or .env).
+ *   Falls back to http://localhost:3000/api, which only works on the iOS
+ *   simulator. For a real iPhone on the same Wi-Fi, set EXPO_PUBLIC_API_BASE
+ *   to your Mac's LAN IP (e.g. http://192.168.1.42:3000/api).
+ * - Every request carries the session JWT stored in SecureStore by auth.tsx,
+ *   sent as `Authorization: Bearer <token>`. Backend's getSessionAthlete()
+ *   validates it with the same NEXTAUTH_SECRET used for web cookies.
  */
 
-const API_BASE = __DEV__
-  ? "http://localhost:3000/api"
-  : "https://your-production-url.com/api";
+import Constants from "expo-constants";
+import { getStoredToken } from "./auth";
+
+const API_BASE =
+  process.env.EXPO_PUBLIC_API_BASE ??
+  (Constants.expoConfig?.extra?.apiBase as string | undefined) ??
+  "http://localhost:3000/api";
 
 async function fetchAPI(path: string, options?: RequestInit) {
+  const token = await getStoredToken();
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options?.headers,
     },
   });
@@ -22,6 +34,10 @@ async function fetchAPI(path: string, options?: RequestInit) {
   }
   return res.json();
 }
+
+// Auth
+export const exchangeGoogleIdToken = (idToken: string) =>
+  fetchAPI("/auth/mobile", { method: "POST", body: JSON.stringify({ idToken }) });
 
 // Athlete
 export const getAthlete = () => fetchAPI("/athlete");

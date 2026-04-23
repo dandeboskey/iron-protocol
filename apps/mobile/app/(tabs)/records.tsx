@@ -3,7 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, ActivityIndicator, Modal,
 } from "react-native";
-import { getRecords, addRecord } from "../src/services/api";
+import { getRecords, addRecord } from "../../src/services/api";
 
 const C = {
   bg: "#18181b", card: "#393940", border: "#41414a",

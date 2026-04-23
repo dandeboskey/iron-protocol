@@ -11,31 +11,33 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  session: {
-    strategy: "database",
-  },
-  pages: {
-    signIn: "/login",
-  },
+  // JWT strategy is required for next-auth/middleware to work at the edge.
+  session: { strategy: "jwt" },
+  pages: { signIn: "/login" },
   callbacks: {
-    session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
+    async jwt({ token, user }) {
+      if (user) token.uid = user.id;
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token.uid) {
+        session.user.id = token.uid as string;
       }
       return session;
     },
   },
   events: {
-    async createUser({ user }) {
-      // Auto-provision an Athlete record for every new Google sign-up.
-      // bodyweightLbs and experienceYrs are defaults — user updates them in /profile.
+    // Runs AFTER the User row exists in the DB, so the FK to Athlete is safe.
+    // Idempotent via upsert — works for new users and backfills existing ones.
+    async signIn({ user }) {
+      if (!user.email || !user.id) return;
       await prisma.athlete.upsert({
-        where: { email: user.email! },
+        where: { email: user.email },
         update: { userId: user.id },
         create: {
           userId: user.id,
           name: user.name ?? "New Athlete",
-          email: user.email!,
+          email: user.email,
           bodyweightLbs: 185,
           experienceYrs: 1,
         },

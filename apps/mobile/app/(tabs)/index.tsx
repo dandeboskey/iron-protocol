@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { getAthlete, getBiometrics, getBlock, getWorkout } from "../src/services/api";
+import { getAthlete, getBiometrics, getBlock, getWorkout } from "../../src/services/api";
 
 const C = {
   bg: "#18181b",

@@ -3,7 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, ActivityIndicator, Alert,
 } from "react-native";
-import { getWorkout, logSet } from "../src/services/api";
+import { getWorkout, logSet } from "../../src/services/api";
 
 const C = {
   bg: "#18181b", card: "#393940", border: "#41414a",

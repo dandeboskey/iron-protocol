@@ -24,7 +24,7 @@ export interface HealthKitData {
 const PERMISSIONS: HealthKitPermissions = {
   permissions: {
     read: [
-      AppleHealthKit.Constants.Permissions.HeartRateVariabilitySDNN,
+      AppleHealthKit.Constants.Permissions.HeartRateVariability,
       AppleHealthKit.Constants.Permissions.SleepAnalysis,
       AppleHealthKit.Constants.Permissions.RestingHeartRate,
       AppleHealthKit.Constants.Permissions.RespiratoryRate,
@@ -98,23 +98,19 @@ async function getLastNightSleep(): Promise<SleepResult> {
 
         for (const s of samples) {
           const dur = new Date(s.endDate).getTime() - new Date(s.startDate).getTime();
-          switch (s.value) {
-            case 'ASLEEP':      // generic / unspecified (older Apple Watch / no watch)
-            case 'ASLEEPCORE':  // light sleep (watchOS 9+)
-              asleepMs += dur;
-              break;
-            case 'ASLEEPDEEP':  // slow-wave sleep (watchOS 9+)
-              asleepMs += dur;
-              deepMs += dur;
-              break;
-            case 'ASLEEPREM':   // REM (watchOS 9+)
-              asleepMs += dur;
-              remMs += dur;
-              break;
-            case 'AWAKE':
-              awakeMs += dur;
-              break;
-            // INBED is not counted as sleep
+          // react-native-health types s.value as number, but the runtime
+          // values are strings from HealthKit. Compare via string cast.
+          const v = String(s.value);
+          if (v === 'ASLEEP' || v === 'ASLEEPCORE') {
+            asleepMs += dur;
+          } else if (v === 'ASLEEPDEEP') {
+            asleepMs += dur;
+            deepMs += dur;
+          } else if (v === 'ASLEEPREM') {
+            asleepMs += dur;
+            remMs += dur;
+          } else if (v === 'AWAKE') {
+            awakeMs += dur;
           }
         }
 
@@ -173,7 +169,7 @@ async function getRespiratoryRate(startDate: string): Promise<number | null> {
 
 async function getBodyweightLbs(): Promise<number | null> {
   return new Promise((resolve) => {
-    AppleHealthKit.getLatestWeight({ unit: 'pound' }, (err, result) => {
+    AppleHealthKit.getLatestWeight({ unit: 'pound' as any }, (err, result) => {
       if (err || !result) return resolve(null);
       resolve(Math.round((result as HealthValue).value * 10) / 10);
     });

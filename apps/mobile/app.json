@@ -13,18 +13,26 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ironprotocol.app",
+      "bundleIdentifier": "com.danieldeboskey.ironprotocol",
       "infoPlist": {
         "NSHealthShareUsageDescription": "Iron Protocol uses your health data to optimize your training readiness and auto-regulate workout intensity.",
-        "NSHealthUpdateUsageDescription": "Iron Protocol records your workout data to Apple Health."
+        "NSHealthUpdateUsageDescription": "Iron Protocol records your workout data to Apple Health.",
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.REPLACE_WITH_REVERSED_IOS_CLIENT_ID"
+            ]
+          }
+        ]
       },
       "entitlements": {
-        "com.apple.developer.healthkit": true,
-        "com.apple.developer.healthkit.access": []
+        "com.apple.developer.healthkit": true
       }
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-secure-store",
+      "expo-web-browser"
     ]
   }
 }

@@ -4,8 +4,8 @@ import {
   StyleSheet, Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { submitCheckin } from "../src/services/api";
-import { readTodayHealthData, requestHealthKitPermissions } from "../src/services/healthkit";
+import { submitCheckin } from "../../src/services/api";
+import { readTodayHealthData, requestHealthKitPermissions } from "../../src/services/healthkit";
 
 const C = {
   bg: "#18181b", card: "#393940", border: "#41414a",
