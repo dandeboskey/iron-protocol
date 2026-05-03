@@ -219,5 +219,82 @@ Risk legend: LOW = isolated UI / local state; MEDIUM = API contract change or sh
 
 ### 26 — Inconsistent date formatting across pages
 - **Problem:** `/history` uses `weekday, month, day`; `/records` uses `month, day, year`; `/progress` uses `month, day`. Not buggy, just sloppy.
-- **Status:** SKIPPED — cosmetic, not user-flagged, would touch 3+ files for trivial benefit.
+- **Status:** SKIPPED — cosmetic, not user-flagged, would touch 3+ files for trivial benefit. **(Reconsidered in Round 3 — see #34.)**
+
+---
+
+## Round 3 additions
+
+### 27 — No global error boundary; failed page renders show stack trace
+- **Problem:** `apps/web/src/app` has no `error.tsx`, `not-found.tsx`, or `loading.tsx`. If any page or `useEffect` throws, the user gets the default Next.js "Application error" white screen with no escape hatch.
+- **Fix:** Add minimal `error.tsx` (with reset button + link home) and `not-found.tsx` styled to match the iron theme.
+- **Risk:** LOW
+- **Status:** DONE
+
+### 28 — `/workout` shows logging UI even after session is server-side completed
+- **Problem:** The `completed` state only flips after a successful `finishWorkout` call in the same tab. Reload the page after completing and you're back to the full logging UI on a session that already has `completedAt`. The "All sets logged" banner is also missing in this case.
+- **Fix:** On mount, check `data.session.completedAt`; if truthy, render the completion screen with a link to `/block`. Also disables the log/edit/delete actions while the session is complete (server already 400s on re-complete).
+- **Risk:** LOW
+- **Status:** DONE
+
+### 29 — Numeric inputs on mobile lack `inputMode` (wrong soft keyboard)
+- **Problem:** Across `/checkin`, `/workout`, `/records`, `/profile`, `/program`, every `<input type="number">` triggers iOS Safari's full QWERTY-with-tiny-numbers keyboard instead of the numeric pad. The user explicitly called this out as iOS-first and mobile-web matters.
+- **Fix:** Add `inputMode="numeric"` for integer fields (reps, HRV, ms, percent) and `inputMode="decimal"` for fractional fields (weight, sleep hours, RPE, bodyweight, height, % e1RM, step values). Combined with `type="number"` this is the correct pattern.
+- **Risk:** LOW
+- **Status:** DONE
+
+### 30 — `/records` Big 3 hero cards: large weights need thousands separator
+- **Problem:** A 1000+ lb total is plausible (705 deadlift; deload work singles can exceed 1000 once a user logs heavy partials). Currently `pr.weightLbs` renders as raw integer.
+- **Fix:** Format with `Intl.NumberFormat("en-US")` so `1250` becomes `1,250`. Also apply on `/progress` Big 3 cards.
+- **Risk:** LOW
+- **Status:** DONE
+
+### 31 — `/workout` "Finish Workout" has no error surface
+- **Problem:** If `/api/session/complete` returns 400/500 (e.g. already completed), the button just stops spinning and `setCompleted` never flips. Silent failure.
+- **Fix:** Read response error and show inline alert.
+- **Risk:** LOW
+- **Status:** DONE
+
+### 32 — `/records` and `/workout` form weight inputs accept negative via min={0}/missing
+- **Problem:** `/workout` add-set form has no `min` on weight/reps/rpe; `/records` weight field has `min={1}` (good) but reps doesn't enforce a max. Server already validates so it's UX polish.
+- **Fix:** Add `min={1}`, `step="0.5"` for weight, `min={1} max={50}` for reps, `min={1} max={10} step="0.5"` for RPE on the active workout form.
+- **Risk:** LOW
+- **Status:** DONE
+
+### 33 — `/checkin` bottom-nav overlap on submit success screen
+- **Problem:** The success "Check-in recorded" screen uses `h-64` and is centered, but the parent `<main>` has bottom-padding only via the form. On a short viewport the nav can overlap the redirect text.
+- **Fix:** Wrap success screen in `pb-20 md:pb-6`.
+- **Risk:** LOW
+- **Status:** DONE
+
+### 34 — Date formatting drift across `/records`, `/history`, `/progress`
+- **Problem:** Three different `toLocaleDateString` invocations. With Round 3's mandate to "pick ONE date format and apply via a tiny shared util", reconsider #26.
+- **Fix:** Add `apps/web/src/lib/format.ts` with `formatShortDate(d)` → `Apr 23, 2026` and `formatLongDate(d)` → `Tue, Apr 23`. Use `formatShortDate` everywhere a row is dated; `formatLongDate` for the daily-log header on `/history`. Hero card subtitle on `/records` becomes `Apr 23` (no year) via a `formatMonthDay` helper. Three callers, one util.
+- **Risk:** LOW
+- **Status:** DONE
+
+### 35 — `/profile` form fields missing `htmlFor`/`id` association
+- **Problem:** Every `<label>` uses class-only styling, no `htmlFor`. Click on label doesn't focus input — measurable a11y regression. Same on `/checkin`, `/records` form, `/program` wizard.
+- **Status:** SKIPPED — touches 5+ files for ~10+ inputs each, mostly cosmetic since clicking the input itself works fine. Re-prioritise if a screen reader user files an issue.
+
+### 36 — `/api/session/complete` does not include `prescriptions` so `/workout` can't refresh after complete
+- **Problem:** Tied to #28; after `finishWorkout` we don't refetch session state. Acceptable since we navigate to /block, but if a server error occurs (#31) the user's view is now stale — readiness, allSetsLogged etc.
+- **Status:** SKIPPED — handled implicitly by #28 + #31 (error surfaces; user can reload).
+
+### 37 — Dashboard readiness gauge is stale after `/checkin` because it's client-fetched on mount only
+- **Problem:** Submit a check-in, redirect to `/`, and the dashboard re-mounts so it does refetch — actually fine. False alarm on inspection.
+- **Status:** SKIPPED — verified via code path; `useRouter().push("/")` after submit causes Next.js to remount the dashboard which re-runs `useEffect`.
+
+### 38 — `/history` could grow unbounded
+- **Problem:** API caps at 30 trailing entries (`getTrailingBiometrics(athlete.id, 30)`), so the page can never show more than 30 even with the "All" toggle. The label is misleading.
+- **Status:** SKIPPED — fixing requires either an API param or a separate route. Tag for follow-up; not user-visible until they have >30 entries (currently 7 in seed).
+
+### 39 — `/program` wizard "Add Phase" / "Add Day" buttons have no max guard
+- **Problem:** User can add 99 phases / 99 days. Not a bug; not flagged.
+- **Status:** SKIPPED — non-issue.
+
+### 40 — `/connect` simulate-import duplicates today's entry without warning
+- **Problem:** Clicking "Simulate Import" multiple times in quick succession creates multiple BiometricEntry rows for today. Same root cause as #10. The `/checkin` page got a banner; `/connect` did not.
+- **Fix:** Show a small note next to a `simulated` device that the data was imported, plus inline check before the second simulate.
+- **Status:** SKIPPED — `/checkin` warning covers the conscientious case. `/connect` is a developer-test affordance per the page copy ("Simulate Import"). Not worth complicating.
 
