@@ -5,3 +5,4 @@ export * from "./workout";
 export * from "./log";
 export * from "./session";
 export * from "./checkin";
+export * from "./athlete";

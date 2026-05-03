@@ -22,6 +22,11 @@ import {
   BiometricCheckinRequestSchema,
   BiometricCheckinResponseSchema,
 } from "./schemas/checkin";
+import {
+  AthleteGetResponseSchema,
+  AthleteUpdateRequestSchema,
+  AthleteUpdateResponseSchema,
+} from "./schemas/athlete";
 
 /**
  * Logical endpoint registry. Each entry pairs an HTTP method + path template
@@ -98,6 +103,23 @@ export const endpoints = {
     path: "/api/biometric",
     request: BiometricCheckinRequestSchema,
     response: BiometricCheckinResponseSchema,
+  },
+  athleteGet: {
+    method: "GET",
+    path: "/api/athlete",
+    request: null,
+    response: AthleteGetResponseSchema,
+  },
+  /**
+   * NB: the route uses HTTP `PUT` (full replace), not `PATCH`. The contract
+   * mirrors the actual server method — don't be tempted to "normalize" this
+   * to PATCH without changing the route in the same PR.
+   */
+  athleteUpdate: {
+    method: "PUT",
+    path: "/api/athlete",
+    request: AthleteUpdateRequestSchema,
+    response: AthleteUpdateResponseSchema,
   },
 } as const;
 
