@@ -184,3 +184,40 @@ Risk legend: LOW = isolated UI / local state; MEDIUM = API contract change or sh
 | 16 | Requires new route + UI; deferred as follow-up. |
 | 17 | Minor UX polish; not flagged by user. |
 | 22 | Not actually a bug after re-reading. |
+
+---
+
+## Round 2 additions
+
+### 16 (carry-over) — Edit/delete logged sets on `/workout`
+- **Fix:** Add `PATCH /api/log/[id]` and `DELETE /api/log/[id]`. Walk `CompletedSet → session → block → athleteId` to verify ownership. Inline edit (weight/reps/rpe) and two-step delete on each logged-set row. Note: edits do NOT recompute `E1RMRecord` (those are append-only history; they'd need their own surgery + a per-set link we don't have). Document this.
+- **Risk:** MEDIUM
+- **Status:** DONE
+
+### 17 (carry-over) — Chart period selector polish
+- **Fix:** Add a 14D and "All" option alongside 7D / 30D on `/history`.
+- **Risk:** LOW
+- **Status:** DONE
+
+### 23 — `/block` page has no CTA when no active block
+- **Problem:** "No active training block." is a dead end. User has nowhere to go.
+- **Fix:** Add a Link to `/program` to start one (matches how the rest of the app handles empty states).
+- **Risk:** LOW
+- **Status:** DONE
+
+### 24 — `/history` empty state has no CTA
+- **Problem:** "No biometric entries yet." dead end.
+- **Fix:** Link to `/checkin`.
+- **Risk:** LOW
+- **Status:** DONE
+
+### 25 — `getActiveAthlete()` is dead code in `packages/db/src/queries.ts`
+- **Problem:** Stale single-user helper; current code uses `getSessionAthlete()` everywhere. Confirmed unused via grep.
+- **Fix:** Remove the function.
+- **Risk:** LOW
+- **Status:** DONE
+
+### 26 — Inconsistent date formatting across pages
+- **Problem:** `/history` uses `weekday, month, day`; `/records` uses `month, day, year`; `/progress` uses `month, day`. Not buggy, just sloppy.
+- **Status:** SKIPPED — cosmetic, not user-flagged, would touch 3+ files for trivial benefit.
+
