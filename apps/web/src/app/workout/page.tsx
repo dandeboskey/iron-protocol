@@ -33,6 +33,7 @@ export default function WorkoutPage() {
   const [logError, setLogError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [finishError, setFinishError] = useState<string | null>(null);
   const [editingSetId, setEditingSetId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
@@ -75,15 +76,22 @@ export default function WorkoutPage() {
   async function finishWorkout() {
     if (!workout?.session?.id) return;
     setCompleting(true);
+    setFinishError(null);
     try {
       const res = await fetch("/api/session/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId: workout.session.id }),
       });
-      if (res.ok) setCompleted(true);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setFinishError(data.error || "Failed to finish session.");
+        return;
+      }
+      setCompleted(true);
     } catch (e) {
       console.error("Finish workout error:", e);
+      setFinishError("Network error. Please try again.");
     } finally {
       setCompleting(false);
     }
@@ -315,6 +323,9 @@ export default function WorkoutPage() {
           >
             {completing ? "Saving..." : "Finish Workout"}
           </button>
+          {finishError && (
+            <p className="text-sm text-red-400 bg-red-950/40 border border-red-900 rounded px-3 py-2 mt-3">{finishError}</p>
+          )}
         </div>
       )}
 
@@ -491,6 +502,8 @@ export default function WorkoutPage() {
                       <label className="text-xs text-iron-500">Weight (lbs)</label>
                       <input
                         type="number"
+                        min={1}
+                        step="0.5"
                         className="input-field text-center text-xl font-mono py-4"
                         value={currentSet.weightLbs}
                         onChange={(e) => setCurrentSet({ ...currentSet, weightLbs: e.target.value })}
@@ -501,6 +514,8 @@ export default function WorkoutPage() {
                       <label className="text-xs text-iron-500">Reps</label>
                       <input
                         type="number"
+                        min={1}
+                        max={50}
                         className="input-field text-center text-xl font-mono py-4"
                         value={currentSet.reps}
                         onChange={(e) => setCurrentSet({ ...currentSet, reps: e.target.value })}
@@ -511,6 +526,8 @@ export default function WorkoutPage() {
                       <label className="text-xs text-iron-500">RPE</label>
                       <input
                         type="number"
+                        min={1}
+                        max={10}
                         step="0.5"
                         className="input-field text-center text-xl font-mono py-4"
                         value={currentSet.rpe}
