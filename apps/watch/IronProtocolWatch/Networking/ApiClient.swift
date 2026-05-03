@@ -1,5 +1,5 @@
 import Foundation
-import Combine
+import Observation
 
 /// Async/await Swift networking layer. Conceptually mirrors
 /// `@iron-protocol/api-client`'s shape — one client, namespaced by domain
@@ -7,11 +7,16 @@ import Combine
 /// surface area is small enough that the maintenance cost is lower than
 /// dragging in a generator pipeline.
 ///
-/// Auth: Phase 1 takes a bearer token at construction. Phase 1 ship:
+/// Auth: Phase 1 reads bearer token from Info.plist. Phase 1 ship:
 /// shared Keychain via App Group with the iPhone app. See README.
+///
+/// Uses the modern `@Observable` macro (Swift 5.9+, watchOS 10+) instead
+/// of `ObservableObject`. Inject via `.environment(api)` and read in
+/// views with `@Environment(ApiClient.self) private var api`.
 
 enum ApiError: Error, LocalizedError {
     case invalidURL
+    case missingConfig(key: String)
     case http(status: Int, body: String)
     case decoding(Error)
     case transport(Error)
@@ -19,6 +24,8 @@ enum ApiError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL: return "Invalid API URL."
+        case .missingConfig(let key):
+            return "Missing Info.plist key '\(key)'. Set it in the watch target's Info.plist (see apps/watch/README.md)."
         case .http(let status, let body): return "HTTP \(status): \(body)"
         case .decoding(let err): return "Decoding failed: \(err.localizedDescription)"
         case .transport(let err): return "Network: \(err.localizedDescription)"
@@ -26,12 +33,50 @@ enum ApiError: Error, LocalizedError {
     }
 }
 
+/// Configuration keys read out of `Bundle.main.infoDictionary`. Both keys
+/// must exist in the watch target's `Info.plist` (or the build settings
+/// that produce it). Swap dev/prod by editing Info.plist values, not by
+/// recompiling Swift code.
+enum ApiClientConfig {
+    static let baseURLKey = "IronProtocolBaseURL"
+    static let bearerKey = "IronProtocolDevBearer"
+
+    /// Read the configured base URL or throw with a clear error message.
+    /// Throws `ApiError.missingConfig` if the Info.plist key is missing or
+    /// blank, and `ApiError.invalidURL` if the value is not parseable.
+    static func currentBaseURL() throws -> URL {
+        let raw = Bundle.main.object(forInfoDictionaryKey: baseURLKey) as? String ?? ""
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            throw ApiError.missingConfig(key: baseURLKey)
+        }
+        guard let url = URL(string: trimmed) else {
+            throw ApiError.invalidURL
+        }
+        return url
+    }
+
+    /// Read the dev bearer token. Returns `nil` (rather than throwing) when
+    /// the key is missing — production builds will swap this for a shared
+    /// Keychain read; missing-token in that path is a runtime failure mode
+    /// the keychain helper will own. For Phase 1 the token is required.
+    static func currentBearer() throws -> String {
+        let raw = Bundle.main.object(forInfoDictionaryKey: bearerKey) as? String ?? ""
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            throw ApiError.missingConfig(key: bearerKey)
+        }
+        return trimmed
+    }
+}
+
 @MainActor
-final class ApiClient: ObservableObject {
+@Observable
+final class ApiClient {
     private let baseURL: URL
     private var bearerToken: String?
     private let session: URLSession
-    private let decoder: JSONDecoder
+    @ObservationIgnored private let decoder: JSONDecoder
 
     init(baseURL: URL, bearerToken: String? = nil, session: URLSession = .shared) {
         self.baseURL = baseURL
@@ -42,6 +87,16 @@ final class ApiClient: ObservableObject {
         // the TS contract. If we ever want auto-decoding to `Date`, switch
         // the `String` typed fields in Models to `Date` and set:
         // decoder.dateDecodingStrategy = .iso8601
+    }
+
+    /// Convenience constructor that pulls config from Info.plist. Throws
+    /// `ApiError.missingConfig` if either `IronProtocolBaseURL` or
+    /// `IronProtocolDevBearer` is absent or blank. Use this from the
+    /// app entry point and surface the error in the UI on first run.
+    static func fromInfoPlist(session: URLSession = .shared) throws -> ApiClient {
+        let baseURL = try ApiClientConfig.currentBaseURL()
+        let bearer = try ApiClientConfig.currentBearer()
+        return ApiClient(baseURL: baseURL, bearerToken: bearer, session: session)
     }
 
     func setBearerToken(_ token: String?) {
