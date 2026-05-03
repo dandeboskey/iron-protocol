@@ -16,6 +16,9 @@ import {
   SessionCompleteResponseSchema,
   BiometricCheckinRequestSchema,
   BiometricCheckinResponseSchema,
+  AthleteGetResponseSchema,
+  AthleteUpdateRequestSchema,
+  AthleteUpdateResponseSchema,
   type RecordsListResponse,
   type RecordCreateRequest,
   type RecordUpdateRequest,
@@ -31,6 +34,9 @@ import {
   type SessionCompleteResponse,
   type BiometricCheckinRequest,
   type BiometricCheckinResponse,
+  type AthleteGetResponse,
+  type AthleteUpdateRequest,
+  type AthleteUpdateResponse,
 } from "@iron-protocol/api-contract";
 import { createTransport, type TransportOptions } from "./transport";
 
@@ -177,6 +183,31 @@ export function createApiClient(options: TransportOptions) {
             body: parsed,
           },
           BiometricCheckinResponseSchema
+        );
+      },
+    },
+    athlete: {
+      /** GET /api/athlete — current athlete profile + latest e1RMs. */
+      get(): Promise<AthleteGetResponse> {
+        return t.request(
+          { method: endpoints.athleteGet.method, path: endpoints.athleteGet.path },
+          AthleteGetResponseSchema
+        );
+      },
+      /**
+       * PUT /api/athlete — full update of mutable profile fields. The route
+       * is PUT (not PATCH); body validation matches AthleteUpdateRequestSchema
+       * bounds (name, bw 50-600, exp 0-60, optional height 36-96).
+       */
+      update(body: AthleteUpdateRequest): Promise<AthleteUpdateResponse> {
+        const parsed = AthleteUpdateRequestSchema.parse(body);
+        return t.request(
+          {
+            method: endpoints.athleteUpdate.method,
+            path: endpoints.athleteUpdate.path,
+            body: parsed,
+          },
+          AthleteUpdateResponseSchema
         );
       },
     },
