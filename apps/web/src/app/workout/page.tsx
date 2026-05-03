@@ -1,6 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { api } from "@/lib/apiClient";
+import { getApiErrorMessage } from "@iron-protocol/api-client";
+import type {
+  WorkoutResponse,
+  ExercisePrescription,
+} from "@iron-protocol/api-contract";
 
 interface SetLog {
   id?: string; // CompletedSet DB id; undefined for sets logged this session before refresh
@@ -18,7 +24,7 @@ interface EditDraft {
 }
 
 export default function WorkoutPage() {
-  const [workout, setWorkout] = useState<any>(null);
+  const [workout, setWorkout] = useState<WorkoutResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [loggedSets, setLoggedSets] = useState<Record<string, SetLog[]>>({});
   const [activePrescription, setActivePrescription] = useState<string | null>(null);
@@ -41,8 +47,8 @@ export default function WorkoutPage() {
   const [busySetId, setBusySetId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/workout")
-      .then((r) => r.json())
+    api.workout
+      .today()
       .then((data) => {
         setWorkout(data);
         if (data.session?.completedSets) {
@@ -69,7 +75,7 @@ export default function WorkoutPage() {
           setCompleted(true);
         }
       })
-      .catch(console.error)
+      .catch((err) => console.error(getApiErrorMessage(err, "Failed to load workout")))
       .finally(() => setLoading(false));
   }, []);
 
@@ -78,20 +84,10 @@ export default function WorkoutPage() {
     setCompleting(true);
     setFinishError(null);
     try {
-      const res = await fetch("/api/session/complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: workout.session.id }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setFinishError(data.error || "Failed to finish session.");
-        return;
-      }
+      await api.workout.completeSession({ sessionId: workout.session.id });
       setCompleted(true);
     } catch (e) {
-      console.error("Finish workout error:", e);
-      setFinishError("Network error. Please try again.");
+      setFinishError(getApiErrorMessage(e, "Failed to finish session."));
     } finally {
       setCompleting(false);
     }
@@ -103,32 +99,22 @@ export default function WorkoutPage() {
     setLogging(true);
     setLogError(null);
     try {
-      const res = await fetch("/api/log", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId: workout.session.id,
-          prescriptionId: currentSet.prescriptionId,
-          setNumber: currentSet.setNumber,
-          weightLbs: Number(currentSet.weightLbs),
-          reps: Number(currentSet.reps),
-          rpe: currentSet.rpe ? Number(currentSet.rpe) : null,
-        }),
+      const data = await api.workout.logSet({
+        sessionId: workout.session.id,
+        prescriptionId: currentSet.prescriptionId,
+        setNumber: currentSet.setNumber,
+        weightLbs: Number(currentSet.weightLbs),
+        reps: Number(currentSet.reps),
+        rpe: currentSet.rpe ? Number(currentSet.rpe) : null,
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setLogError(data.error || "Failed to log set.");
-        return;
-      }
       const pid = currentSet.prescriptionId;
-      const created = data.set;
       setLoggedSets((prev) => ({
         ...prev,
         [pid]: [
           ...(prev[pid] || []),
           {
             ...currentSet,
-            id: created?.id,
+            id: data.set.id,
           },
         ],
       }));
@@ -139,8 +125,7 @@ export default function WorkoutPage() {
         rpe: "",
       }));
     } catch (e) {
-      console.error("Log error:", e);
-      setLogError("Network error. Please try again.");
+      setLogError(getApiErrorMessage(e, "Failed to log set."));
     } finally {
       setLogging(false);
     }
@@ -190,20 +175,11 @@ export default function WorkoutPage() {
     setBusySetId(setId);
     setEditError(null);
     try {
-      const res = await fetch(`/api/log/${setId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          weightLbs: w,
-          reps: r,
-          rpe: rpePayload,
-        }),
+      await api.workout.editSet(setId, {
+        weightLbs: w,
+        reps: r,
+        rpe: rpePayload,
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setEditError(data.error || "Update failed.");
-        return;
-      }
       setLoggedSets((prev) => ({
         ...prev,
         [prescriptionId]: (prev[prescriptionId] || []).map((s) =>
@@ -219,8 +195,7 @@ export default function WorkoutPage() {
       }));
       cancelEdit();
     } catch (e) {
-      console.error("Edit set error:", e);
-      setEditError("Network error. Please try again.");
+      setEditError(getApiErrorMessage(e, "Update failed."));
     } finally {
       setBusySetId(null);
     }
@@ -230,8 +205,7 @@ export default function WorkoutPage() {
     if (completed) return;
     setBusySetId(setId);
     try {
-      const res = await fetch(`/api/log/${setId}`, { method: "DELETE" });
-      if (!res.ok) return;
+      await api.workout.deleteSet(setId);
       setLoggedSets((prev) => {
         const remaining = (prev[prescriptionId] || []).filter((s) => s.id !== setId);
         // Renumber remaining sets sequentially so the next-set form picks up cleanly.
@@ -248,7 +222,7 @@ export default function WorkoutPage() {
       );
       setPendingDelete(null);
     } catch (e) {
-      console.error("Delete set error:", e);
+      console.error(getApiErrorMessage(e, "Failed to delete set"));
     } finally {
       setBusySetId(null);
     }
@@ -271,10 +245,10 @@ export default function WorkoutPage() {
     );
   }
 
-  const prescriptions = workout.session.prescriptions || [];
+  const prescriptions: ExercisePrescription[] = workout.session.prescriptions || [];
   const allSetsLogged =
     prescriptions.length > 0 &&
-    prescriptions.every((p: any) => (loggedSets[p.id]?.length ?? 0) >= p.prescribedSets);
+    prescriptions.every((p) => (loggedSets[p.id]?.length ?? 0) >= p.prescribedSets);
 
   if (completed) {
     return (
@@ -331,7 +305,7 @@ export default function WorkoutPage() {
 
       {/* Exercise list */}
       <div className="space-y-4">
-        {prescriptions.map((p: any) => {
+        {prescriptions.map((p) => {
           const isActive = activePrescription === p.id;
           const sets = loggedSets[p.id] || [];
           const allDone = sets.length >= p.prescribedSets;
