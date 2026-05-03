@@ -22,12 +22,15 @@ keep the watch app **independent**:
 ## Phase 1 scope (this scaffold)
 
 - "Hello, Iron Protocol" boot.
-- One screen: `ReadinessGlanceView` — calls `GET /api/biometric` via
-  `ApiClient.swift`, displays the readiness coefficient + last check-in date,
-  with a "Open on iPhone" affordance that hands off via Universal Link.
-- Hand-mirrored `Codable` types for the three contract schemas (records,
-  dashboard, workout). Field-by-field correspondence to the TS Zod schemas
-  is documented inline.
+- `ReadinessGlanceView` — calls `GET /api/biometric` via `ApiClient.swift`,
+  displays the readiness coefficient + last check-in date, with a "Open on
+  iPhone" affordance that hands off via Universal Link.
+- `CheckinQuickView` — four steppers (mood/soreness/energy/stress, 1-10),
+  submits via `POST /api/biometric` (HRV/sleep nil for now; HealthKit pull
+  is Phase 2).
+- Hand-mirrored `Codable` types for the contract schemas (records,
+  dashboard, workout, log, session-complete, biometric check-in).
+  Field-by-field correspondence to the TS Zod schemas is documented inline.
 
 ## Phase 2 (deferred)
 
@@ -76,14 +79,72 @@ IronProtocolWatch/
 ├── Models/
 │   ├── PersonalRecord.swift       # mirrors PersonalRecordSchema
 │   ├── Biometric.swift            # mirrors BiometricEntrySchema, Readiness, DashboardResponse
-│   └── Workout.swift              # mirrors WorkoutResponseSchema and friends
+│   ├── Workout.swift              # mirrors WorkoutResponseSchema and friends
+│   ├── LogSet.swift               # mirrors LogSet*RequestSchema + LogSet*ResponseSchema
+│   ├── SessionComplete.swift      # mirrors SessionComplete*Schema (incl. TrainingBlockAdvanced)
+│   └── BiometricCheckin.swift     # mirrors BiometricCheckinRequest/Response
 ├── Networking/
-│   └── ApiClient.swift            # async/await transport + endpoint methods
+│   └── ApiClient.swift            # async/await transport + namespaced endpoints
+│                                  # (records / dashboard / workout / checkin)
 └── Views/
-    └── ReadinessGlanceView.swift  # Phase 1 UI
+    ├── ReadinessGlanceView.swift  # Phase 1 readiness glance
+    └── CheckinQuickView.swift     # Phase 1 daily check-in (4 subjective scales)
 ```
 
 A `Package.swift` is intentionally **not** included. The user creates a
 WatchOS app target via Xcode's template and drags these files into the
 project — that's lower friction than maintaining a SwiftPM target that
 duplicates Xcode's app-template plumbing.
+
+## Phase 1 work breakdown (Xcode steps)
+
+The scaffold above is source-only. The following steps create an actual
+buildable WatchOS target. Do them on a Mac with Xcode 15+.
+
+1. **Create the project.** Xcode > File > New > Project > watchOS > App.
+   - Product name: `IronProtocolWatch`
+   - Bundle ID: `com.danieldeboskey.ironprotocol.watch` (or your reverse-DNS)
+   - Interface: SwiftUI
+   - Language: Swift
+   - Include Tests: optional
+   - Save the project at `apps/watch/IronProtocolWatch.xcodeproj` (alongside
+     this README, NOT inside the `IronProtocolWatch/` source folder).
+
+2. **Drag in the source files.** In the Xcode project navigator, delete the
+   template-generated `ContentView.swift` and `App.swift`. Right-click the
+   target > Add Files to "IronProtocolWatch", select all three folders
+   (`Models/`, `Networking/`, `Views/`) and `IronProtocolWatchApp.swift`
+   under `apps/watch/IronProtocolWatch/`. Choose "Create groups", NOT
+   "Create folder references".
+
+3. **Set the deployment target.** Select the target > General > Deployment
+   Info > set Minimum Deployments to watchOS 10.0 (or 11.0 if you've
+   updated the runtime).
+
+4. **Wire the app entry.** Confirm `IronProtocolWatchApp.swift` is the
+   `@main` entry. Open the file and verify it instantiates `ApiClient`
+   with the dev base URL and injects it via `.environmentObject`.
+
+5. **Configure Info.plist.**
+   - Add an `NSAppTransportSecurity` exception for `localhost` while
+     developing against the local Next.js server (`http://localhost:3000`).
+     Production should drop the exception and use HTTPS.
+   - Add `NSHealthShareUsageDescription` and
+     `NSHealthUpdateUsageDescription` strings even though Phase 1 doesn't
+     read HealthKit yet — Apple rejects builds that import HealthKit
+     without the keys, and Phase 2 will need them.
+
+6. **Provide a dev bearer token.** Until the App Group keychain ship is
+   wired (see Auth section), hardcode a token at boot in
+   `IronProtocolWatchApp.swift` from your `.env.local`. Mark the line
+   with a `// TODO: replace with shared keychain` so it doesn't ship.
+
+7. **Run on the simulator.** Select an Apple Watch simulator scheme and
+   hit Run. The watch sim shares the host's network, so
+   `http://localhost:3000` works. You should see the readiness glance
+   render against your seeded dev data, and the check-in view should POST
+   successfully and show "Submitted".
+
+8. **(Optional) Add to git later.** The `.xcodeproj` is intentionally not
+   committed yet — it's per-developer and full of absolute paths. Commit
+   when the team is ready to standardize on a single project file.

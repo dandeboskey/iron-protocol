@@ -53,6 +53,7 @@ final class ApiClient: ObservableObject {
     lazy var records = Records(client: self)
     lazy var dashboard = Dashboard(client: self)
     lazy var workout = Workout(client: self)
+    lazy var checkin = Checkin(client: self)
 
     struct Records {
         unowned let client: ApiClient
@@ -76,12 +77,47 @@ final class ApiClient: ObservableObject {
         func today() async throws -> WorkoutResponse {
             try await client.get("/api/workout")
         }
+        /// Mirrors `client.workout.logSet(...)` in TS. POST /api/log.
+        func logSet(_ body: LogSetRequest) async throws -> LogSetResponse {
+            try await client.send(method: "POST", path: "/api/log", body: body)
+        }
+        /// Mirrors `client.workout.editSet(id, ...)` in TS. PATCH /api/log/{id}.
+        func editSet(id: String, _ body: LogSetEditRequest) async throws -> LogSetResponse {
+            try await client.send(method: "PATCH", path: "/api/log/\(id)", body: body)
+        }
+        /// Mirrors `client.workout.deleteSet(id)` in TS. DELETE /api/log/{id}.
+        func deleteSet(id: String) async throws -> LogSetDeleteResponse {
+            try await client.get("/api/log/\(id)", method: "DELETE")
+        }
+        /// Mirrors `client.workout.completeSession(...)` in TS. Returns the
+        /// updated `TrainingBlock` (NOT `{ ok, advanced }`).
+        func completeSession(_ body: SessionCompleteRequest) async throws -> SessionCompleteResponse {
+            try await client.send(method: "POST", path: "/api/session/complete", body: body)
+        }
+    }
+
+    struct Checkin {
+        unowned let client: ApiClient
+        /// Mirrors `client.checkin.submit(...)` in TS. POST /api/biometric.
+        /// HealthKit-pulled HRV/sleep should be provided in the request when
+        /// available; pass nil for missing values.
+        func submit(_ body: BiometricCheckinRequest) async throws -> BiometricCheckinResponse {
+            try await client.send(method: "POST", path: "/api/biometric", body: body)
+        }
     }
 
     // MARK: - core request
 
-    fileprivate func get<T: Decodable>(_ path: String) async throws -> T {
-        try await request(method: "GET", path: path, body: Optional<Empty>.none)
+    fileprivate func get<T: Decodable>(_ path: String, method: String = "GET") async throws -> T {
+        try await request(method: method, path: path, body: Optional<Empty>.none)
+    }
+
+    fileprivate func send<T: Decodable, B: Encodable>(
+        method: String,
+        path: String,
+        body: B
+    ) async throws -> T {
+        try await request(method: method, path: path, body: Optional.some(body))
     }
 
     private struct Empty: Encodable {}
