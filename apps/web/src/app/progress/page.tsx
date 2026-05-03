@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatMonthDay, formatWeight } from "@/lib/format";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -139,7 +140,7 @@ export default function ProgressPage() {
           return (
             <div key={exercise} className="card text-center">
               <p className="text-xs text-iron-400 uppercase tracking-wide mb-1">{exercise}</p>
-              <p className="text-3xl font-mono font-bold">{latest?.e1rmLbs ?? "--"}</p>
+              <p className="text-3xl font-mono font-bold">{latest ? formatWeight(latest.e1rmLbs) : "--"}</p>
               <p className="text-xs text-iron-500">est. 1RM</p>
               {delta !== null && (
                 <p className={`text-xs mt-1 font-mono ${delta > 0 ? "text-green-400" : delta < 0 ? "text-red-400" : "text-iron-500"}`}>
@@ -190,7 +191,7 @@ export default function ProgressPage() {
                 {records.slice(0, 5).map((r: any) => (
                   <div key={r.id} className="flex justify-between text-sm py-1 border-b border-iron-800 last:border-0">
                     <span className="text-iron-400">
-                      {new Date(r.recordedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      {formatMonthDay(r.recordedAt)}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="font-mono">{r.e1rmLbs} lbs</span>

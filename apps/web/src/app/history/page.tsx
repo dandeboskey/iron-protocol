@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatLongDate } from "@/lib/format";
 import {
   ResponsiveContainer,
   LineChart,
@@ -221,11 +222,7 @@ export default function HistoryPage() {
                 <div key={entry.id} className="card-compact">
                   <div className="flex items-center justify-between mb-2">
                     <p className="font-medium">
-                      {new Date(entry.date).toLocaleDateString("en-US", {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {formatLongDate(entry.date)}
                     </p>
                     {entry.hrvMs && (
                       <span className="text-sm font-mono text-iron-300">

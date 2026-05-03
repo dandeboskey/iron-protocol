@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatMonthDay, formatShortDate, formatWeight } from "@/lib/format";
 
 const BIG_THREE = ["Squat", "Bench Press", "Deadlift"];
 const COMMON_EXERCISES = [
@@ -217,10 +218,10 @@ export default function RecordsPage() {
               <p className="text-[10px] text-iron-500 mb-1">Best 1RM</p>
               {pr ? (
                 <>
-                  <p className="text-3xl font-mono font-bold">{pr.weightLbs}</p>
+                  <p className="text-3xl font-mono font-bold">{formatWeight(pr.weightLbs)}</p>
                   <p className="text-xs text-iron-500">lbs</p>
                   <p className="text-[10px] text-iron-600 mt-1">
-                    {new Date(pr.achievedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    {formatMonthDay(pr.achievedAt)}
                   </p>
                 </>
               ) : (
@@ -408,7 +409,7 @@ export default function RecordsPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-iron-500 hidden sm:inline">
-                        {new Date(r.achievedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        {formatShortDate(r.achievedAt)}
                       </span>
                       {isPendingDelete ? (
                         <div className="flex gap-1">
