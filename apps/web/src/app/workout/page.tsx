@@ -63,6 +63,10 @@ export default function WorkoutPage() {
           }
           setLoggedSets(existing);
         }
+        // Server-side completion (e.g. reload after finishing) wins over local state.
+        if (data.session?.completedAt) {
+          setCompleted(true);
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -86,6 +90,7 @@ export default function WorkoutPage() {
   }
 
   async function logSet() {
+    if (completed) return;
     if (!workout?.session?.id || !currentSet.weightLbs || !currentSet.reps) return;
     setLogging(true);
     setLogError(null);
@@ -134,6 +139,7 @@ export default function WorkoutPage() {
   }
 
   function startEdit(s: SetLog) {
+    if (completed) return;
     if (!s.id) return;
     setEditingSetId(s.id);
     setEditError(null);
@@ -151,6 +157,7 @@ export default function WorkoutPage() {
   }
 
   async function saveEdit(setId: string, prescriptionId: string) {
+    if (completed) return;
     if (!editDraft) return;
     const w = Number(editDraft.weightLbs);
     if (!Number.isFinite(w) || w <= 0) {
@@ -212,6 +219,7 @@ export default function WorkoutPage() {
   }
 
   async function confirmDelete(setId: string, prescriptionId: string) {
+    if (completed) return;
     setBusySetId(setId);
     try {
       const res = await fetch(`/api/log/${setId}`, { method: "DELETE" });
@@ -324,6 +332,7 @@ export default function WorkoutPage() {
                 isActive ? "ring-2 ring-accent/50" : ""
               } ${allDone ? "opacity-60" : ""}`}
               onClick={() => {
+                if (completed) return;
                 if (!isActive) {
                   setActivePrescription(p.id);
                   setCurrentSet({
@@ -360,7 +369,7 @@ export default function WorkoutPage() {
               {sets.length > 0 && (
                 <div className="mt-3 space-y-1" onClick={(e) => e.stopPropagation()}>
                   {sets.map((s) => {
-                    const editable = !!s.id;
+                    const editable = !!s.id && !completed;
                     const isEditing = editingSetId === s.id;
                     const isPendingDelete = pendingDelete === s.id;
                     const isBusy = s.id != null && busySetId === s.id;
