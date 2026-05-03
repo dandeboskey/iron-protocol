@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { api } from "@/lib/apiClient";
+import { getApiErrorMessage } from "@iron-protocol/api-client";
+import type { Athlete, E1RMRecord } from "@iron-protocol/api-contract";
 
 export default function ProfilePage() {
-  const [athlete, setAthlete] = useState<any>(null);
-  const [e1rms, setE1rms] = useState<any[]>([]);
+  const [athlete, setAthlete] = useState<Athlete | null>(null);
+  const [e1rms, setE1rms] = useState<E1RMRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
@@ -17,19 +20,17 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    fetch("/api/athlete")
-      .then((r) => r.json())
+    api.athlete
+      .get()
       .then((data) => {
-        if (data.athlete) {
-          setAthlete(data.athlete);
-          setForm({
-            name: data.athlete.name,
-            bodyweightLbs: String(data.athlete.bodyweightLbs),
-            heightIn: String(data.athlete.heightIn || ""),
-            experienceYrs: String(data.athlete.experienceYrs),
-          });
-        }
-        setE1rms(data.e1rms || []);
+        setAthlete(data.athlete);
+        setForm({
+          name: data.athlete.name,
+          bodyweightLbs: String(data.athlete.bodyweightLbs),
+          heightIn: data.athlete.heightIn != null ? String(data.athlete.heightIn) : "",
+          experienceYrs: String(data.athlete.experienceYrs),
+        });
+        setE1rms(data.e1rms);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -63,27 +64,17 @@ export default function ProfilePage() {
 
     setSaving(true);
     try {
-      const res = await fetch("/api/athlete", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          bodyweightLbs: bw,
-          heightIn: height,
-          experienceYrs: exp,
-        }),
+      const data = await api.athlete.update({
+        name,
+        bodyweightLbs: bw,
+        heightIn: height,
+        experienceYrs: exp,
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error || "Failed to save profile.");
-        return;
-      }
-      const data = await res.json();
       setAthlete(data.athlete);
       setSavedAt(Date.now());
     } catch (err) {
       console.error(err);
-      setError("Network error. Please try again.");
+      setError(getApiErrorMessage(err) || "Network error. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -174,7 +165,7 @@ export default function ProfilePage() {
         <div className="card">
           <h2 className="text-sm font-medium text-iron-400 mb-4">Estimated 1RMs</h2>
           <div className="space-y-3">
-            {e1rms.map((r: any) => (
+            {e1rms.map((r) => (
               <div key={r.id} className="flex items-center justify-between py-2 border-b border-iron-800 last:border-0">
                 <div>
                   <p className="font-medium">{r.exercise}</p>

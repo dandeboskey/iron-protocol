@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { formatLongDate } from "@/lib/format";
+import { api } from "@/lib/apiClient";
+import type { BiometricEntry } from "@iron-protocol/api-contract";
 import {
   ResponsiveContainer,
   LineChart,
@@ -109,14 +111,14 @@ function formatLabel(dateStr: string) {
 }
 
 export default function HistoryPage() {
-  const [allEntries, setAllEntries] = useState<any[]>([]);
+  const [allEntries, setAllEntries] = useState<BiometricEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<Period>(7);
 
   useEffect(() => {
-    fetch("/api/biometric")
-      .then((r) => r.json())
-      .then((data) => setAllEntries(data.entries || []))
+    api.dashboard
+      .get()
+      .then((data) => setAllEntries(data.entries))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
@@ -218,7 +220,7 @@ export default function HistoryPage() {
               Daily Log
             </h2>
             <div className="space-y-3">
-              {entries.map((entry: any) => (
+              {entries.map((entry) => (
                 <div key={entry.id} className="card-compact">
                   <div className="flex items-center justify-between mb-2">
                     <p className="font-medium">
