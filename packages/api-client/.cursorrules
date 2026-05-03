@@ -1,0 +1,20 @@
+# @iron-protocol/api-client — boundary rules
+
+A typed HTTP client built on top of `@iron-protocol/api-contract`. Used by
+both `apps/web` (browser fetch w/ session cookie) and `apps/mobile` (fetch
+with bearer token). Stays unaware of which transport it is using.
+
+## Imports allowed
+- `@iron-protocol/api-contract`
+- Standard `fetch` (assumed available — Node 18+, browsers, RN).
+
+## Imports forbidden
+- `@iron-protocol/db`, `@iron-protocol/core-logic`, `@iron-protocol/integrations`
+- Anything from `apps/*`
+- Cookie-jar / browser-storage code (the consumer wires that into `fetchImpl`
+  or `getAuthToken`).
+
+## Conventions
+- One factory: `createApiClient({ baseUrl, getAuthToken?, fetchImpl? })`.
+- Errors are thrown as `ApiError` with `.status` and `.body`.
+- No retries, no caching, no request dedup. Consumers add those.
