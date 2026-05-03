@@ -392,6 +392,7 @@ export default function WorkoutPage() {
                           <div className="grid grid-cols-3 gap-2">
                             <input
                               type="number"
+                              inputMode="decimal"
                               min={0}
                               step="0.5"
                               className="input-field text-sm font-mono text-center"
@@ -401,6 +402,7 @@ export default function WorkoutPage() {
                             />
                             <input
                               type="number"
+                              inputMode="numeric"
                               min={1}
                               className="input-field text-sm font-mono text-center"
                               value={editDraft.reps}
@@ -409,6 +411,7 @@ export default function WorkoutPage() {
                             />
                             <input
                               type="number"
+                              inputMode="decimal"
                               min={1}
                               max={10}
                               step="0.5"
@@ -502,6 +505,7 @@ export default function WorkoutPage() {
                       <label className="text-xs text-iron-500">Weight (lbs)</label>
                       <input
                         type="number"
+                        inputMode="decimal"
                         min={1}
                         step="0.5"
                         className="input-field text-center text-xl font-mono py-4"
@@ -514,6 +518,7 @@ export default function WorkoutPage() {
                       <label className="text-xs text-iron-500">Reps</label>
                       <input
                         type="number"
+                        inputMode="numeric"
                         min={1}
                         max={50}
                         className="input-field text-center text-xl font-mono py-4"
@@ -526,6 +531,7 @@ export default function WorkoutPage() {
                       <label className="text-xs text-iron-500">RPE</label>
                       <input
                         type="number"
+                        inputMode="decimal"
                         min={1}
                         max={10}
                         step="0.5"

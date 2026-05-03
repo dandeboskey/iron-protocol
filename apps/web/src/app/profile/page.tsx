@@ -119,6 +119,7 @@ export default function ProfilePage() {
             <label className="label">Bodyweight (lbs)</label>
             <input
               type="number"
+              inputMode="decimal"
               min={50}
               max={600}
               step="0.1"
@@ -132,6 +133,7 @@ export default function ProfilePage() {
             <label className="label">Height (in)</label>
             <input
               type="number"
+              inputMode="decimal"
               min={36}
               max={96}
               step="0.1"
@@ -144,6 +146,7 @@ export default function ProfilePage() {
             <label className="label">Experience (yrs)</label>
             <input
               type="number"
+              inputMode="decimal"
               min={0}
               max={60}
               step="0.5"

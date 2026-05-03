@@ -139,10 +139,12 @@ export default function CheckInPage() {
 
   if (submitted) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <div className="text-5xl text-green-400">&#10003;</div>
-        <p className="text-xl font-semibold text-green-400">Check-in recorded</p>
-        <p className="text-iron-400">Redirecting to dashboard...</p>
+      <div className="pb-20 md:pb-6">
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-5xl text-green-400">&#10003;</div>
+          <p className="text-xl font-semibold text-green-400">Check-in recorded</p>
+          <p className="text-iron-400">Redirecting to dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -164,6 +166,7 @@ export default function CheckInPage() {
             <label className="label">HRV (ms)</label>
             <input
               type="number"
+              inputMode="numeric"
               min={15}
               max={150}
               step={1}
@@ -177,6 +180,7 @@ export default function CheckInPage() {
             <label className="label">Sleep Hours</label>
             <input
               type="number"
+              inputMode="decimal"
               min={0}
               max={14}
               step="0.1"

@@ -276,6 +276,7 @@ export default function RecordsPage() {
               <label className="label">Weight (lbs)</label>
               <input
                 type="number"
+                inputMode="decimal"
                 min={1}
                 step="0.5"
                 className="input-field text-xl font-mono"
@@ -288,6 +289,7 @@ export default function RecordsPage() {
               <label className="label">Reps</label>
               <input
                 type="number"
+                inputMode="numeric"
                 min={1}
                 className="input-field text-xl font-mono"
                 value={form.reps}
@@ -358,6 +360,7 @@ export default function RecordsPage() {
                           <label className="text-xs text-iron-500">Weight (lbs)</label>
                           <input
                             type="number"
+                            inputMode="decimal"
                             min={1}
                             step="0.5"
                             className="input-field text-sm font-mono"
@@ -369,6 +372,7 @@ export default function RecordsPage() {
                           <label className="text-xs text-iron-500">Reps</label>
                           <input
                             type="number"
+                            inputMode="numeric"
                             min={1}
                             className="input-field text-sm font-mono"
                             value={editDraft.reps}

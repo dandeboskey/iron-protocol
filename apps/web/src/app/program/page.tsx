@@ -251,7 +251,7 @@ export default function ProgramPage() {
                     </div>
                     <div>
                       <label className="text-xs text-iron-500">Weeks</label>
-                      <input type="number" min={1} max={12} className="input-field" value={phase.weekCount}
+                      <input type="number" inputMode="numeric" min={1} max={12} className="input-field" value={phase.weekCount}
                         onChange={(e) => { const p = [...phases]; p[idx].weekCount = Number(e.target.value); setPhases(p); }} />
                     </div>
                   </div>
@@ -326,22 +326,22 @@ export default function ProgramPage() {
                             </select>
                           </div>
                           <div className="flex gap-2">
-                            <input type="number" className="input-field text-sm w-16 text-center" placeholder="Sets" value={ex.sets}
+                            <input type="number" inputMode="numeric" className="input-field text-sm w-16 text-center" placeholder="Sets" value={ex.sets}
                               onChange={(e) => updateExercise(activePhaseIdx, activeDayIdx, exIdx, "sets", Number(e.target.value))} />
                             <span className="text-iron-500 self-center">&times;</span>
-                            <input type="number" className="input-field text-sm w-16 text-center" placeholder="Reps" value={ex.reps}
+                            <input type="number" inputMode="numeric" className="input-field text-sm w-16 text-center" placeholder="Reps" value={ex.reps}
                               onChange={(e) => updateExercise(activePhaseIdx, activeDayIdx, exIdx, "reps", Number(e.target.value))} />
                           </div>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                           <div>
                             <label className="text-[10px] text-iron-500">RPE</label>
-                            <input type="number" step="0.5" className="input-field text-sm" value={ex.rpe}
+                            <input type="number" inputMode="decimal" step="0.5" className="input-field text-sm" value={ex.rpe}
                               onChange={(e) => updateExercise(activePhaseIdx, activeDayIdx, exIdx, "rpe", Number(e.target.value))} />
                           </div>
                           <div>
                             <label className="text-[10px] text-iron-500">% e1RM</label>
-                            <input type="number" step="0.01" className="input-field text-sm" placeholder="0.70"
+                            <input type="number" inputMode="decimal" step="0.01" className="input-field text-sm" placeholder="0.70"
                               value={ex.percentOfE1RM ?? ""} onChange={(e) => updateExercise(activePhaseIdx, activeDayIdx, exIdx, "percentOfE1RM", e.target.value ? Number(e.target.value) : null)} />
                           </div>
                           <div className="flex items-end">
