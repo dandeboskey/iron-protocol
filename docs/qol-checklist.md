@@ -235,43 +235,43 @@ Risk legend: LOW = isolated UI / local state; MEDIUM = API contract change or sh
 - **Problem:** The `completed` state only flips after a successful `finishWorkout` call in the same tab. Reload the page after completing and you're back to the full logging UI on a session that already has `completedAt`. The "All sets logged" banner is also missing in this case.
 - **Fix:** On mount, check `data.session.completedAt`; if truthy, render the completion screen with a link to `/block`. Also disables the log/edit/delete actions while the session is complete (server already 400s on re-complete).
 - **Risk:** LOW
-- **Status:** DONE
+- **Status:** DONE (verified) — `6f52b20`
 
 ### 29 — Numeric inputs on mobile lack `inputMode` (wrong soft keyboard)
 - **Problem:** Across `/checkin`, `/workout`, `/records`, `/profile`, `/program`, every `<input type="number">` triggers iOS Safari's full QWERTY-with-tiny-numbers keyboard instead of the numeric pad. The user explicitly called this out as iOS-first and mobile-web matters.
 - **Fix:** Add `inputMode="numeric"` for integer fields (reps, HRV, ms, percent) and `inputMode="decimal"` for fractional fields (weight, sleep hours, RPE, bodyweight, height, % e1RM, step values). Combined with `type="number"` this is the correct pattern.
 - **Risk:** LOW
-- **Status:** DONE
+- **Status:** DONE (verified) — `f614351`
 
 ### 30 — `/records` Big 3 hero cards: large weights need thousands separator
 - **Problem:** A 1000+ lb total is plausible (705 deadlift; deload work singles can exceed 1000 once a user logs heavy partials). Currently `pr.weightLbs` renders as raw integer.
 - **Fix:** Format with `Intl.NumberFormat("en-US")` so `1250` becomes `1,250`. Also apply on `/progress` Big 3 cards.
 - **Risk:** LOW
-- **Status:** DONE
+- **Status:** DONE (verified) — `30b4f28`
 
 ### 31 — `/workout` "Finish Workout" has no error surface
 - **Problem:** If `/api/session/complete` returns 400/500 (e.g. already completed), the button just stops spinning and `setCompleted` never flips. Silent failure.
 - **Fix:** Read response error and show inline alert.
 - **Risk:** LOW
-- **Status:** DONE
+- **Status:** DONE (verified) — `30f5bba`
 
 ### 32 — `/records` and `/workout` form weight inputs accept negative via min={0}/missing
 - **Problem:** `/workout` add-set form has no `min` on weight/reps/rpe; `/records` weight field has `min={1}` (good) but reps doesn't enforce a max. Server already validates so it's UX polish.
 - **Fix:** Add `min={1}`, `step="0.5"` for weight, `min={1} max={50}` for reps, `min={1} max={10} step="0.5"` for RPE on the active workout form.
 - **Risk:** LOW
-- **Status:** DONE
+- **Status:** DONE (verified) — `30f5bba`
 
 ### 33 — `/checkin` bottom-nav overlap on submit success screen
 - **Problem:** The success "Check-in recorded" screen uses `h-64` and is centered, but the parent `<main>` has bottom-padding only via the form. On a short viewport the nav can overlap the redirect text.
 - **Fix:** Wrap success screen in `pb-20 md:pb-6`.
 - **Risk:** LOW
-- **Status:** DONE
+- **Status:** DONE (verified) — `f614351`
 
 ### 34 — Date formatting drift across `/records`, `/history`, `/progress`
 - **Problem:** Three different `toLocaleDateString` invocations. With Round 3's mandate to "pick ONE date format and apply via a tiny shared util", reconsider #26.
 - **Fix:** Add `apps/web/src/lib/format.ts` with `formatShortDate(d)` → `Apr 23, 2026` and `formatLongDate(d)` → `Tue, Apr 23`. Use `formatShortDate` everywhere a row is dated; `formatLongDate` for the daily-log header on `/history`. Hero card subtitle on `/records` becomes `Apr 23` (no year) via a `formatMonthDay` helper. Three callers, one util.
 - **Risk:** LOW
-- **Status:** DONE
+- **Status:** DONE (verified) — `deeb11c` (util) + `30b4f28` (callsites)
 
 ### 35 — `/profile` form fields missing `htmlFor`/`id` association
 - **Problem:** Every `<label>` uses class-only styling, no `htmlFor`. Click on label doesn't focus input — measurable a11y regression. Same on `/checkin`, `/records` form, `/program` wizard.
