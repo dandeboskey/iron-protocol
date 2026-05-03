@@ -8,6 +8,20 @@ import {
 } from "./schemas/records";
 import { DashboardResponseSchema } from "./schemas/dashboard";
 import { WorkoutResponseSchema } from "./schemas/workout";
+import {
+  LogSetCreateRequestSchema,
+  LogSetUpdateRequestSchema,
+  LogSetMutationResponseSchema,
+  LogSetDeleteResponseSchema,
+} from "./schemas/log";
+import {
+  SessionCompleteRequestSchema,
+  SessionCompleteResponseSchema,
+} from "./schemas/session";
+import {
+  BiometricCheckinRequestSchema,
+  BiometricCheckinResponseSchema,
+} from "./schemas/checkin";
 
 /**
  * Logical endpoint registry. Each entry pairs an HTTP method + path template
@@ -55,6 +69,36 @@ export const endpoints = {
     request: null,
     response: WorkoutResponseSchema,
   },
+  logSetCreate: {
+    method: "POST",
+    path: "/api/log",
+    request: LogSetCreateRequestSchema,
+    response: LogSetMutationResponseSchema,
+  },
+  logSetUpdate: {
+    method: "PATCH",
+    path: "/api/log/:id",
+    request: LogSetUpdateRequestSchema,
+    response: LogSetMutationResponseSchema,
+  },
+  logSetDelete: {
+    method: "DELETE",
+    path: "/api/log/:id",
+    request: null,
+    response: LogSetDeleteResponseSchema,
+  },
+  sessionComplete: {
+    method: "POST",
+    path: "/api/session/complete",
+    request: SessionCompleteRequestSchema,
+    response: SessionCompleteResponseSchema,
+  },
+  biometricCheckin: {
+    method: "POST",
+    path: "/api/biometric",
+    request: BiometricCheckinRequestSchema,
+    response: BiometricCheckinResponseSchema,
+  },
 } as const;
 
 export type Endpoints = typeof endpoints;
@@ -87,6 +131,11 @@ export function recordsListUrl(): string {
 /** Convenience: single-record URL. */
 export function recordByIdUrl(id: string): string {
   return buildPath(endpoints.recordsUpdate.path, { id });
+}
+
+/** Convenience: single-CompletedSet URL (PATCH/DELETE share the path). */
+export function logByIdUrl(id: string): string {
+  return buildPath(endpoints.logSetUpdate.path, { id });
 }
 
 // Re-export the zod namespace so consumers don't double-import it for typing.
