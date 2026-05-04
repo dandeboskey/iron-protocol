@@ -1,10 +1,5 @@
 import { prisma } from "./index";
 
-/** Get the active athlete (first one, since this is single-user for now) */
-export async function getActiveAthlete() {
-  return prisma.athlete.findFirst({ orderBy: { createdAt: "asc" } });
-}
-
 /** Get athlete by ID with all relations */
 export async function getAthleteWithBlock(athleteId: string) {
   return prisma.athlete.findUnique({

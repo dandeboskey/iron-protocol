@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatLongDate } from "@/lib/format";
 import {
   ResponsiveContainer,
   LineChart,
@@ -12,8 +13,13 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const PERIOD_OPTIONS = [7, 30] as const;
-type Period = (typeof PERIOD_OPTIONS)[number];
+const PERIOD_OPTIONS = [
+  { value: 7, label: "7D" },
+  { value: 14, label: "14D" },
+  { value: 30, label: "30D" },
+  { value: 0, label: "All" },
+] as const;
+type Period = (typeof PERIOD_OPTIONS)[number]["value"];
 
 function TrendChart({
   data,
@@ -115,7 +121,7 @@ export default function HistoryPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const entries = allEntries.slice(0, period);
+  const entries = period === 0 ? allEntries : allEntries.slice(0, period);
   // Charts want chronological order (oldest→newest)
   const chartData = [...entries].reverse().map((e) => ({
     label: formatLabel(e.date),
@@ -151,15 +157,15 @@ export default function HistoryPage() {
         <div className="flex gap-1 bg-iron-900 border border-iron-700 rounded-lg p-1">
           {PERIOD_OPTIONS.map((p) => (
             <button
-              key={p}
-              onClick={() => setPeriod(p)}
+              key={p.value}
+              onClick={() => setPeriod(p.value)}
               className={`px-3 py-1 rounded text-sm font-semibold transition-colors ${
-                period === p
+                period === p.value
                   ? "bg-red-600 text-white"
                   : "text-iron-400 hover:text-iron-200"
               }`}
             >
-              {p}D
+              {p.label}
             </button>
           ))}
         </div>
@@ -167,7 +173,8 @@ export default function HistoryPage() {
 
       {entries.length === 0 ? (
         <div className="card text-center py-12">
-          <p className="text-iron-400">No biometric entries yet.</p>
+          <p className="text-iron-400 mb-3">No biometric entries yet.</p>
+          <a href="/checkin" className="btn-primary inline-block">Daily Check-In</a>
         </div>
       ) : (
         <>
@@ -215,11 +222,7 @@ export default function HistoryPage() {
                 <div key={entry.id} className="card-compact">
                   <div className="flex items-center justify-between mb-2">
                     <p className="font-medium">
-                      {new Date(entry.date).toLocaleDateString("en-US", {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {formatLongDate(entry.date)}
                     </p>
                     {entry.hrvMs && (
                       <span className="text-sm font-mono text-iron-300">

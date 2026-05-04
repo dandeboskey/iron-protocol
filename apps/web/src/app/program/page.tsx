@@ -57,6 +57,7 @@ export default function ProgramPage() {
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState<WizardStep>("info");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Wizard state
   const [programName, setProgramName] = useState("My Program");
@@ -109,22 +110,36 @@ export default function ProgramPage() {
   }
 
   async function handleSave() {
+    setSaveError(null);
+    const name = programName.trim();
+    if (!name) {
+      setSaveError("Program name is required.");
+      return;
+    }
+    const hasAnyDay = phases.some((p) => p.days.length > 0);
+    if (!hasAnyDay) {
+      setSaveError("At least one phase needs a training day before saving.");
+      return;
+    }
     setSaving(true);
     try {
       const totalWeeks = phases.reduce((sum, p) => sum + p.weekCount, 0);
       const res = await fetch("/api/program", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: programName, durationWeeks: totalWeeks, phases }),
+        body: JSON.stringify({ name, durationWeeks: totalWeeks, phases }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        setTemplates((prev) => [data.template, ...prev]);
-        setTab("list");
-        setStep("info");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSaveError(data.error || "Failed to save program.");
+        return;
       }
+      setTemplates((prev) => [data.template, ...prev]);
+      setTab("list");
+      setStep("info");
     } catch (err) {
       console.error(err);
+      setSaveError("Network error. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -169,8 +184,20 @@ export default function ProgramPage() {
                     ))}
                   </div>
                   <div className="flex gap-2">
-                    <button className="btn-secondary text-sm">View Details</button>
-                    <button className="btn-primary text-sm">Start Block</button>
+                    <button
+                      className="btn-secondary text-sm opacity-50 cursor-not-allowed"
+                      disabled
+                      title="Detail view coming soon"
+                    >
+                      View Details
+                    </button>
+                    <button
+                      className="btn-primary text-sm opacity-50 cursor-not-allowed"
+                      disabled
+                      title="Block start flow coming soon"
+                    >
+                      Start Block
+                    </button>
                   </div>
                 </div>
               ))}
@@ -224,7 +251,7 @@ export default function ProgramPage() {
                     </div>
                     <div>
                       <label className="text-xs text-iron-500">Weeks</label>
-                      <input type="number" min={1} max={12} className="input-field" value={phase.weekCount}
+                      <input type="number" inputMode="numeric" min={1} max={12} className="input-field" value={phase.weekCount}
                         onChange={(e) => { const p = [...phases]; p[idx].weekCount = Number(e.target.value); setPhases(p); }} />
                     </div>
                   </div>
@@ -299,22 +326,22 @@ export default function ProgramPage() {
                             </select>
                           </div>
                           <div className="flex gap-2">
-                            <input type="number" className="input-field text-sm w-16 text-center" placeholder="Sets" value={ex.sets}
+                            <input type="number" inputMode="numeric" className="input-field text-sm w-16 text-center" placeholder="Sets" value={ex.sets}
                               onChange={(e) => updateExercise(activePhaseIdx, activeDayIdx, exIdx, "sets", Number(e.target.value))} />
                             <span className="text-iron-500 self-center">&times;</span>
-                            <input type="number" className="input-field text-sm w-16 text-center" placeholder="Reps" value={ex.reps}
+                            <input type="number" inputMode="numeric" className="input-field text-sm w-16 text-center" placeholder="Reps" value={ex.reps}
                               onChange={(e) => updateExercise(activePhaseIdx, activeDayIdx, exIdx, "reps", Number(e.target.value))} />
                           </div>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                           <div>
                             <label className="text-[10px] text-iron-500">RPE</label>
-                            <input type="number" step="0.5" className="input-field text-sm" value={ex.rpe}
+                            <input type="number" inputMode="decimal" step="0.5" className="input-field text-sm" value={ex.rpe}
                               onChange={(e) => updateExercise(activePhaseIdx, activeDayIdx, exIdx, "rpe", Number(e.target.value))} />
                           </div>
                           <div>
                             <label className="text-[10px] text-iron-500">% e1RM</label>
-                            <input type="number" step="0.01" className="input-field text-sm" placeholder="0.70"
+                            <input type="number" inputMode="decimal" step="0.01" className="input-field text-sm" placeholder="0.70"
                               value={ex.percentOfE1RM ?? ""} onChange={(e) => updateExercise(activePhaseIdx, activeDayIdx, exIdx, "percentOfE1RM", e.target.value ? Number(e.target.value) : null)} />
                           </div>
                           <div className="flex items-end">
@@ -367,6 +394,9 @@ export default function ProgramPage() {
                   {phase.days.length === 0 && <p className="text-iron-600 text-sm ml-4">No days configured</p>}
                 </div>
               ))}
+              {saveError && (
+                <p className="text-sm text-red-400 bg-red-950/40 border border-red-900 rounded px-3 py-2">{saveError}</p>
+              )}
               <div className="flex gap-3">
                 <button onClick={() => setStep("days")} className="btn-secondary flex-1">Back</button>
                 <button onClick={handleSave} className="btn-primary flex-1" disabled={saving}>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function BlockPage() {
   const [data, setData] = useState<any>(null);
@@ -106,7 +107,8 @@ export default function BlockPage() {
         </>
       ) : (
         <div className="card text-center py-12">
-          <p className="text-iron-400">No active training block.</p>
+          <p className="text-iron-400 mb-3">No active training block.</p>
+          <Link href="/program" className="btn-primary inline-block">Browse Programs</Link>
         </div>
       )}
 

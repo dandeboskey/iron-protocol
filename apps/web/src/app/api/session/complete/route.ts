@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
+import { getSessionAthlete } from "@/lib/getSessionAthlete";
 import { prisma } from "@iron-protocol/db";
 
 export async function POST(request: Request) {
   try {
+    const athlete = await getSessionAthlete();
+    if (!athlete) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const { sessionId } = await request.json();
     if (!sessionId) return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
 
@@ -11,26 +15,26 @@ export async function POST(request: Request) {
       include: { block: true },
     });
     if (!session) return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    if (session.block.athleteId !== athlete.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     if (session.completedAt) return NextResponse.json({ error: "Already completed" }, { status: 400 });
 
     const block = session.block;
 
-    // Count distinct training days in this week to know when to roll over
     const weekSessions = await prisma.trainingSession.findMany({
       where: { blockId: block.id, weekNumber: block.currentWeek },
       orderBy: { dayNumber: "asc" },
     });
     const daysInWeek = weekSessions.length > 0
-      ? Math.max(...weekSessions.map((s) => s.dayNumber))
-      : 4; // default 4-day split
+      ? Math.max(...weekSessions.map((s: { dayNumber: number }) => s.dayNumber))
+      : 4;
 
-    // Mark session complete
     await prisma.trainingSession.update({
       where: { id: sessionId },
       data: { completedAt: new Date() },
     });
 
-    // Advance block position
     let nextWeek = block.currentWeek;
     let nextDay = block.currentDay + 1;
     let nextStatus = block.status;
