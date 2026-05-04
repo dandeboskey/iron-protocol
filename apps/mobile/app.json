@@ -33,6 +33,15 @@
       "expo-router",
       "expo-secure-store",
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3248d991-ca05-4398-a028-ddad40a7a1db"
+      }
+    },
+    "owner": "jddebosk"
   }
 }
