@@ -23,11 +23,13 @@
               "com.googleusercontent.apps.236745855254-4mkb5gklol3carpt1kiisqcd81od60hp"
             ]
           }
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       },
       "entitlements": {
         "com.apple.developer.healthkit": true
-      }
+      },
+      "runtimeVersion": "1.0.0"
     },
     "plugins": [
       "expo-router",
@@ -40,6 +42,14 @@
       },
       "eas": {
         "projectId": "3248d991-ca05-4398-a028-ddad40a7a1db"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3248d991-ca05-4398-a028-ddad40a7a1db"
+    },
+    "android": {
+      "runtimeVersion": {
+        "policy": "appVersion"
       }
     },
     "owner": "jddebosk"
