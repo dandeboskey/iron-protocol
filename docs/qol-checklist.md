@@ -298,3 +298,13 @@ Risk legend: LOW = isolated UI / local state; MEDIUM = API contract change or sh
 - **Fix:** Show a small note next to a `simulated` device that the data was imported, plus inline check before the second simulate.
 - **Status:** SKIPPED — `/checkin` warning covers the conscientious case. `/connect` is a developer-test affordance per the page copy ("Simulate Import"). Not worth complicating.
 
+
+## Round 4 — math regressions found by tests
+
+### M1 — `brzyckiE1RM` pole guard fires before 12-rep clamp
+- **Problem:** `packages/core-logic/src/math/e1rm.ts` checks `if (reps >= 37) return 0` before applying `Math.min(reps, MAX_RELIABLE_REPS)`. The 12-rep clamp is supposed to make `brzyckiE1RM(w, anyRepsAbove12)` equal to `brzyckiE1RM(w, 12)`. Today, `reps>=37` returns 0 (and downstream `compositeE1RM` falls back to Epley alone via the `epley || brzycki` guard), silently changing the composite formula's mix.
+- **Repro:** `brzyckiE1RM(315, 37)` → `0`. `brzyckiE1RM(315, 100)` → `0`. Should both equal `brzyckiE1RM(315, 12)` = 453.6.
+- **Fix:** Move the clamp ahead of the pole guard, or remove the pole guard entirely (the clamp at 12 makes 37 unreachable).
+- **Test:** `packages/core-logic/src/math/e1rm.test.ts` ("BUG: pole guard runs before 12-rep clamp...").
+- **Risk:** LOW — cosmetic for in-domain inputs (UI only ever passes reps in [1,12]); only manifests if a logged set ever exceeds 12 reps and the validation didn't strip it.
+- **Status:** OPEN
