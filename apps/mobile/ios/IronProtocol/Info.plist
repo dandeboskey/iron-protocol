@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>ironprotocol</string>
-          <string>com.ironprotocol.app</string>
+          <string>com.danieldeboskey.ironprotocol</string>
         </array>
       </dict>
     </array>
