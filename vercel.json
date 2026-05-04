@@ -1,0 +1,5 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm install && npx --workspace @iron-protocol/db prisma generate && npm run build --workspace @iron-protocol/web",
+  "outputDirectory": "apps/web/.next"
+}
