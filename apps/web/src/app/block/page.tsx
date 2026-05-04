@@ -2,20 +2,34 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { api } from "@/lib/apiClient";
+import { getApiErrorMessage } from "@iron-protocol/api-client";
+import type {
+  ActiveBlock,
+  E1RMRecord,
+} from "@iron-protocol/api-contract";
+
+interface BlockPageData {
+  block: ActiveBlock | null;
+  progress: number;
+  e1rms: E1RMRecord[];
+}
 
 export default function BlockPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<BlockPageData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/block").then((r) => r.json()),
-      fetch("/api/athlete").then((r) => r.json()),
-    ])
+    Promise.all([api.block.get(), api.athlete.get()])
       .then(([blockData, athleteData]) => {
-        setData({ ...blockData, e1rms: athleteData.e1rms });
+        setData({
+          block: blockData.block,
+          progress: blockData.progress,
+          e1rms: athleteData.e1rms,
+        });
       })
-      .catch(console.error)
+      .catch((e) => setError(getApiErrorMessage(e, "Failed to load block.")))
       .finally(() => setLoading(false));
   }, []);
 
@@ -33,6 +47,10 @@ export default function BlockPage() {
   return (
     <div className="pb-20 md:pb-6 space-y-6">
       <h1 className="text-2xl font-bold">Training Block</h1>
+
+      {error && (
+        <p className="text-sm text-red-400 bg-red-950/40 border border-red-900 rounded px-3 py-2">{error}</p>
+      )}
 
       {block ? (
         <>
@@ -84,7 +102,7 @@ export default function BlockPage() {
             <div className="card">
               <h3 className="text-sm font-medium text-iron-400 mb-4">Sessions This Week</h3>
               <div className="space-y-2">
-                {block.sessions.map((s: any) => (
+                {block.sessions.map((s) => (
                   <div key={s.id} className="flex items-center justify-between py-2 border-b border-iron-800 last:border-0">
                     <div>
                       <p className="font-medium">Day {s.dayNumber}</p>
@@ -113,11 +131,11 @@ export default function BlockPage() {
       )}
 
       {/* e1RMs */}
-      {data?.e1rms?.length > 0 && (
+      {data && data.e1rms.length > 0 && (
         <div className="card">
           <h3 className="text-sm font-medium text-iron-400 mb-4">Current Estimated 1RMs</h3>
           <div className="space-y-3">
-            {data.e1rms.map((r: any) => (
+            {data.e1rms.map((r) => (
               <div key={r.id} className="flex items-center justify-between">
                 <span className="font-medium">{r.exercise}</span>
                 <div className="text-right">
