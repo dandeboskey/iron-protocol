@@ -1,32 +1,49 @@
 /**
- * API client for the Iron Protocol backend.
+ * API client for the Iron Protocol backend — mobile.
  *
- * - Base URL is read from EXPO_PUBLIC_API_BASE (set in app.json or .env).
- *   Falls back to http://localhost:3000/api, which only works on the iOS
- *   simulator. For a real iPhone on the same Wi-Fi, set EXPO_PUBLIC_API_BASE
- *   to your Mac's LAN IP (e.g. http://192.168.1.42:3000/api).
- * - Every request carries the session JWT stored in SecureStore by auth.tsx,
- *   sent as `Authorization: Bearer <token>`. Backend's getSessionAthlete()
- *   validates it with the same NEXTAUTH_SECRET used for web cookies.
+ * Wraps `@iron-protocol/api-client` with mobile-specific transport: bearer
+ * token from SecureStore (via `auth.tsx`), base URL from `EXPO_PUBLIC_API_BASE`
+ * with a localhost fallback that only works on the iOS simulator.
+ *
+ * Named exports below preserve the call sites used by every tab screen.
+ * Migrate-in-place: callers continue to import `getAthlete`, `submitCheckin`,
+ * etc. — they now route through the typed client and pick up Zod-validated
+ * responses.
  */
 
 import Constants from "expo-constants";
+import { createApiClient } from "@iron-protocol/api-client";
+import type {
+  AthleteUpdateRequest,
+  BiometricCheckinRequest,
+  LogSetCreateRequest,
+  RecordCreateRequest,
+  ProgramCreateRequest,
+} from "@iron-protocol/api-contract";
 import { getStoredToken } from "./auth";
 
-const API_BASE =
+const API_BASE_RAW =
   process.env.EXPO_PUBLIC_API_BASE ??
   (Constants.expoConfig?.extra?.apiBase as string | undefined) ??
   "http://localhost:3000/api";
 
-async function fetchAPI(path: string, options?: RequestInit) {
-  const token = await getStoredToken();
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options?.headers,
-    },
+// The shared client expects a baseUrl that paths join onto: e.g. "/api/records".
+// Existing mobile config bakes "/api" into the env var; strip it so paths line up.
+const baseUrl = API_BASE_RAW.replace(/\/api\/?$/, "");
+
+const client = createApiClient({
+  baseUrl,
+  getAuthToken: getStoredToken,
+});
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+// `/auth/mobile` is not on the contract (auth flow is platform-specific).
+// Keep the hand-rolled call here.
+export async function exchangeGoogleIdToken(idToken: string) {
+  const res = await fetch(`${baseUrl}/api/auth/mobile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Unknown error" }));
@@ -35,34 +52,29 @@ async function fetchAPI(path: string, options?: RequestInit) {
   return res.json();
 }
 
-// Auth
-export const exchangeGoogleIdToken = (idToken: string) =>
-  fetchAPI("/auth/mobile", { method: "POST", body: JSON.stringify({ idToken }) });
+// ── Athlete ──────────────────────────────────────────────────────────────────
+export const getAthlete = () => client.athlete.get();
+export const updateAthlete = (data: AthleteUpdateRequest) =>
+  client.athlete.update(data);
 
-// Athlete
-export const getAthlete = () => fetchAPI("/athlete");
-export const updateAthlete = (data: any) =>
-  fetchAPI("/athlete", { method: "PUT", body: JSON.stringify(data) });
+// ── Biometrics ───────────────────────────────────────────────────────────────
+export const getBiometrics = () => client.dashboard.get();
+export const submitCheckin = (data: BiometricCheckinRequest) =>
+  client.checkin.submit(data);
 
-// Biometrics
-export const getBiometrics = () => fetchAPI("/biometric");
-export const submitCheckin = (data: any) =>
-  fetchAPI("/biometric", { method: "POST", body: JSON.stringify(data) });
+// ── Training Block ───────────────────────────────────────────────────────────
+export const getBlock = () => client.block.get();
 
-// Training Block
-export const getBlock = () => fetchAPI("/block");
+// ── Workout ──────────────────────────────────────────────────────────────────
+export const getWorkout = () => client.workout.today();
+export const logSet = (data: LogSetCreateRequest) => client.workout.logSet(data);
 
-// Workout
-export const getWorkout = () => fetchAPI("/workout");
-export const logSet = (data: any) =>
-  fetchAPI("/log", { method: "POST", body: JSON.stringify(data) });
+// ── Personal Records ─────────────────────────────────────────────────────────
+export const getRecords = () => client.records.list();
+export const addRecord = (data: RecordCreateRequest) =>
+  client.records.create(data);
 
-// Personal Records
-export const getRecords = () => fetchAPI("/records");
-export const addRecord = (data: any) =>
-  fetchAPI("/records", { method: "POST", body: JSON.stringify(data) });
-
-// Programs
-export const getPrograms = () => fetchAPI("/program");
-export const createProgram = (data: any) =>
-  fetchAPI("/program", { method: "POST", body: JSON.stringify(data) });
+// ── Programs ─────────────────────────────────────────────────────────────────
+export const getPrograms = () => client.program.list();
+export const createProgram = (data: ProgramCreateRequest) =>
+  client.program.create(data);
