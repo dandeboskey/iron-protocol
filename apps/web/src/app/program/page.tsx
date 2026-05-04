@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { api } from "@/lib/apiClient";
+import { getApiErrorMessage } from "@iron-protocol/api-client";
+import type { ProgramTemplate } from "@iron-protocol/api-contract";
 
 type WizardStep = "info" | "phases" | "days" | "review";
 
@@ -53,8 +56,9 @@ const COMMON_EXERCISES = [
 
 export default function ProgramPage() {
   const [tab, setTab] = useState<"list" | "create">("list");
-  const [templates, setTemplates] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<ProgramTemplate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState<string | null>(null);
   const [step, setStep] = useState<WizardStep>("info");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -66,10 +70,10 @@ export default function ProgramPage() {
   const [activeDayIdx, setActiveDayIdx] = useState(0);
 
   useEffect(() => {
-    fetch("/api/program")
-      .then((r) => r.json())
-      .then((data) => setTemplates(data.templates || []))
-      .catch(console.error)
+    api.program
+      .list()
+      .then((data) => setTemplates(data.templates))
+      .catch((err) => setListError(getApiErrorMessage(err, "Failed to load programs.")))
       .finally(() => setLoading(false));
   }, []);
 
@@ -124,22 +128,32 @@ export default function ProgramPage() {
     setSaving(true);
     try {
       const totalWeeks = phases.reduce((sum, p) => sum + p.weekCount, 0);
-      const res = await fetch("/api/program", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, durationWeeks: totalWeeks, phases }),
+      const data = await api.program.create({
+        name,
+        durationWeeks: totalWeeks,
+        phases: phases.map((p) => ({
+          name: p.name,
+          phaseType: p.phaseType,
+          weekCount: p.weekCount,
+          days: p.days.map((d) => ({
+            dayNumber: d.dayNumber,
+            label: d.label,
+            exercises: d.exercises.map((ex) => ({
+              exerciseName: ex.exerciseName,
+              sets: ex.sets,
+              reps: ex.reps,
+              rpe: ex.rpe,
+              percentOfE1RM: ex.percentOfE1RM,
+              isAccessory: ex.isAccessory,
+            })),
+          })),
+        })),
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setSaveError(data.error || "Failed to save program.");
-        return;
-      }
       setTemplates((prev) => [data.template, ...prev]);
       setTab("list");
       setStep("info");
     } catch (err) {
-      console.error(err);
-      setSaveError("Network error. Please try again.");
+      setSaveError(getApiErrorMessage(err, "Failed to save program."));
     } finally {
       setSaving(false);
     }
@@ -161,6 +175,9 @@ export default function ProgramPage() {
 
       {tab === "list" && (
         <>
+          {listError && (
+            <p className="text-sm text-red-400 bg-red-950/40 border border-red-900 rounded px-3 py-2">{listError}</p>
+          )}
           {loading ? (
             <div className="text-iron-500 text-center py-12">Loading...</div>
           ) : templates.length === 0 ? (
@@ -170,14 +187,14 @@ export default function ProgramPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {templates.map((t: any) => (
+              {templates.map((t) => (
                 <div key={t.id} className="card">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold text-lg">{t.name}</h3>
                     <span className="text-sm text-iron-400">{t.durationWeeks} weeks</span>
                   </div>
                   <div className="flex gap-2 flex-wrap mb-3">
-                    {t.phases?.map((p: any) => (
+                    {t.phases?.map((p) => (
                       <span key={p.id} className={`badge-${p.phaseType.toLowerCase()}`}>
                         {p.name} ({p.weekCount}wk)
                       </span>
