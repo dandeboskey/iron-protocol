@@ -8,6 +8,7 @@
     "db:push": "npm run db:push --workspace=packages/db",
     "db:seed": "npm run db:seed --workspace=packages/db",
     "db:studio": "npm run db:studio --workspace=packages/db",
+    "docs:openapi": "tsx scripts/generate-openapi.ts",
     "setup": "npm install && npm run db:push && npm run db:seed"
   }
 }

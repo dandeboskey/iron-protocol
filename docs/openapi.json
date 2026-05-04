@@ -1,0 +1,2493 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Iron Protocol API",
+    "version": "0.1.0",
+    "description": "Generated from `packages/api-contract/src/endpoints.ts`. Do not edit by hand — run `npm run docs:openapi` to regenerate."
+  },
+  "paths": {
+    "/api/records": {
+      "get": {
+        "operationId": "recordsList",
+        "summary": "GET /api/records",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "records": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "athleteId": {
+                            "type": "string"
+                          },
+                          "exerciseName": {
+                            "type": "string"
+                          },
+                          "recordType": {
+                            "type": "string"
+                          },
+                          "weightLbs": {
+                            "type": "number"
+                          },
+                          "reps": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "volumeLoad": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "isAllTime": {
+                            "type": "boolean"
+                          },
+                          "previousBest": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "achievedAt": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "athleteId",
+                          "exerciseName",
+                          "recordType",
+                          "weightLbs",
+                          "reps",
+                          "achievedAt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "records"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "post": {
+        "operationId": "recordsCreate",
+        "summary": "POST /api/records",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "record": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "athleteId": {
+                          "type": "string"
+                        },
+                        "exerciseName": {
+                          "type": "string"
+                        },
+                        "recordType": {
+                          "type": "string"
+                        },
+                        "weightLbs": {
+                          "type": "number"
+                        },
+                        "reps": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "volumeLoad": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "isAllTime": {
+                          "type": "boolean"
+                        },
+                        "previousBest": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "achievedAt": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "athleteId",
+                        "exerciseName",
+                        "recordType",
+                        "weightLbs",
+                        "reps",
+                        "achievedAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "record"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "exerciseName": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "recordType": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "weightLbs": {
+                    "type": "number",
+                    "exclusiveMinimum": true,
+                    "minimum": 0
+                  },
+                  "reps": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "notes": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "exerciseName",
+                  "recordType",
+                  "weightLbs"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/records/{id}": {
+      "patch": {
+        "operationId": "recordsUpdate",
+        "summary": "PATCH /api/records/:id",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "record": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "athleteId": {
+                          "type": "string"
+                        },
+                        "exerciseName": {
+                          "type": "string"
+                        },
+                        "recordType": {
+                          "type": "string"
+                        },
+                        "weightLbs": {
+                          "type": "number"
+                        },
+                        "reps": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "volumeLoad": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "isAllTime": {
+                          "type": "boolean"
+                        },
+                        "previousBest": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "achievedAt": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "athleteId",
+                        "exerciseName",
+                        "recordType",
+                        "weightLbs",
+                        "reps",
+                        "achievedAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "record"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "exerciseName": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "recordType": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "weightLbs": {
+                    "type": "number",
+                    "exclusiveMinimum": true,
+                    "minimum": 0
+                  },
+                  "reps": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "notes": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "recordsDelete",
+        "summary": "DELETE /api/records/:id",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/biometric": {
+      "get": {
+        "operationId": "dashboard",
+        "summary": "GET /api/biometric",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "athleteId": {
+                            "type": "string"
+                          },
+                          "date": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "source": {
+                            "type": "string"
+                          },
+                          "hrvMs": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "sleepHours": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "sleepQuality": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "mood": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "soreness": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "energy": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "stress": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "notes": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "restingHeartRate": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "respiratoryRate": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "bodyTemperature": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "bodyweightLbs": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "athleteId",
+                          "date",
+                          "source",
+                          "hrvMs",
+                          "sleepHours",
+                          "sleepQuality",
+                          "mood",
+                          "soreness",
+                          "energy",
+                          "stress",
+                          "notes",
+                          "createdAt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "readiness": {
+                      "type": "object",
+                      "properties": {
+                        "score": {
+                          "type": "number"
+                        },
+                        "coefficient": {
+                          "type": "number"
+                        },
+                        "flags": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "breakdown": {
+                          "type": "object",
+                          "properties": {
+                            "hrvComponent": {
+                              "type": "number"
+                            },
+                            "sleepComponent": {
+                              "type": "number"
+                            },
+                            "subjectiveComponent": {
+                              "type": "number"
+                            },
+                            "rhrComponent": {
+                              "type": "number",
+                              "nullable": true
+                            }
+                          },
+                          "required": [
+                            "hrvComponent",
+                            "sleepComponent",
+                            "subjectiveComponent",
+                            "rhrComponent"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "score",
+                        "coefficient",
+                        "flags",
+                        "breakdown"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "entries",
+                    "readiness"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "post": {
+        "operationId": "biometricCheckin",
+        "summary": "POST /api/biometric",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "entry": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "athleteId": {
+                          "type": "string"
+                        },
+                        "date": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "source": {
+                          "type": "string"
+                        },
+                        "hrvMs": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "sleepHours": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "sleepQuality": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "mood": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "soreness": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "energy": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "stress": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "notes": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "restingHeartRate": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "respiratoryRate": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "bodyTemperature": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "bodyweightLbs": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "athleteId",
+                        "date",
+                        "source",
+                        "hrvMs",
+                        "sleepHours",
+                        "sleepQuality",
+                        "mood",
+                        "soreness",
+                        "energy",
+                        "stress",
+                        "notes",
+                        "createdAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "entry"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "hrvMs": {
+                    "type": "number",
+                    "nullable": true
+                  },
+                  "sleepHours": {
+                    "type": "number",
+                    "nullable": true
+                  },
+                  "sleepQuality": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "nullable": true
+                  },
+                  "mood": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "nullable": true
+                  },
+                  "soreness": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "nullable": true
+                  },
+                  "energy": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "nullable": true
+                  },
+                  "stress": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "nullable": true
+                  },
+                  "notes": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workout": {
+      "get": {
+        "operationId": "workoutToday",
+        "summary": "GET /api/workout",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "session": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "blockId": {
+                          "type": "string"
+                        },
+                        "weekNumber": {
+                          "type": "integer"
+                        },
+                        "dayNumber": {
+                          "type": "integer"
+                        },
+                        "scheduledDate": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "completedAt": {
+                          "type": "string",
+                          "minLength": 1,
+                          "nullable": true
+                        },
+                        "readinessScore": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "readinessCoeff": {
+                          "type": "number"
+                        },
+                        "autoRegNote": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "prescriptions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "sessionId": {
+                                "type": "string"
+                              },
+                              "exerciseName": {
+                                "type": "string"
+                              },
+                              "exerciseOrder": {
+                                "type": "integer"
+                              },
+                              "prescribedSets": {
+                                "type": "integer"
+                              },
+                              "prescribedReps": {
+                                "type": "integer"
+                              },
+                              "prescribedRPE": {
+                                "type": "number"
+                              },
+                              "percentOfE1RM": {
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "targetWeightLbs": {
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "isAccessory": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "sessionId",
+                              "exerciseName",
+                              "exerciseOrder",
+                              "prescribedSets",
+                              "prescribedReps",
+                              "prescribedRPE",
+                              "percentOfE1RM",
+                              "targetWeightLbs",
+                              "isAccessory"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "completedSets": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "sessionId": {
+                                "type": "string"
+                              },
+                              "prescriptionId": {
+                                "type": "string"
+                              },
+                              "setNumber": {
+                                "type": "integer"
+                              },
+                              "reps": {
+                                "type": "integer"
+                              },
+                              "weightLbs": {
+                                "type": "number"
+                              },
+                              "rpe": {
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "completedAt": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "sessionId",
+                              "prescriptionId",
+                              "setNumber",
+                              "reps",
+                              "weightLbs",
+                              "rpe",
+                              "completedAt"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "blockId",
+                        "weekNumber",
+                        "dayNumber",
+                        "scheduledDate",
+                        "completedAt",
+                        "readinessScore",
+                        "readinessCoeff",
+                        "autoRegNote",
+                        "createdAt",
+                        "prescriptions",
+                        "completedSets"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "readiness": {
+                      "type": "object",
+                      "properties": {
+                        "score": {
+                          "type": "number"
+                        },
+                        "coefficient": {
+                          "type": "number"
+                        },
+                        "flags": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "breakdown": {
+                          "type": "object",
+                          "properties": {
+                            "hrvComponent": {
+                              "type": "number"
+                            },
+                            "sleepComponent": {
+                              "type": "number"
+                            },
+                            "subjectiveComponent": {
+                              "type": "number"
+                            },
+                            "rhrComponent": {
+                              "type": "number",
+                              "nullable": true
+                            }
+                          },
+                          "required": [
+                            "hrvComponent",
+                            "sleepComponent",
+                            "subjectiveComponent",
+                            "rhrComponent"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "score",
+                        "coefficient",
+                        "flags",
+                        "breakdown"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
+                    "regulated": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "exerciseName": {
+                            "type": "string"
+                          },
+                          "sets": {
+                            "type": "integer"
+                          },
+                          "reps": {
+                            "type": "integer"
+                          },
+                          "rpe": {
+                            "type": "number"
+                          },
+                          "percentOfE1RM": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "isAccessory": {
+                            "type": "boolean"
+                          },
+                          "adjustedSets": {
+                            "type": "integer"
+                          },
+                          "adjustedRpe": {
+                            "type": "number"
+                          },
+                          "adjustedPercentE1RM": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "targetWeightLbs": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "regulationNote": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "exerciseName",
+                          "sets",
+                          "reps",
+                          "rpe",
+                          "percentOfE1RM",
+                          "isAccessory",
+                          "adjustedSets",
+                          "adjustedRpe",
+                          "adjustedPercentE1RM",
+                          "targetWeightLbs",
+                          "regulationNote"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "block": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "phase": {
+                          "type": "string"
+                        },
+                        "currentWeek": {
+                          "type": "integer"
+                        },
+                        "currentDay": {
+                          "type": "integer"
+                        },
+                        "weekCount": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "phase",
+                        "currentWeek",
+                        "currentDay",
+                        "weekCount"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "session",
+                    "label",
+                    "readiness",
+                    "regulated",
+                    "block"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/log": {
+      "post": {
+        "operationId": "logSetCreate",
+        "summary": "POST /api/log",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "set": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "sessionId": {
+                          "type": "string"
+                        },
+                        "prescriptionId": {
+                          "type": "string"
+                        },
+                        "setNumber": {
+                          "type": "integer"
+                        },
+                        "reps": {
+                          "type": "integer"
+                        },
+                        "weightLbs": {
+                          "type": "number"
+                        },
+                        "rpe": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "completedAt": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "sessionId",
+                        "prescriptionId",
+                        "setNumber",
+                        "reps",
+                        "weightLbs",
+                        "rpe",
+                        "completedAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "set"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sessionId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "prescriptionId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "setNumber": {
+                    "type": "integer",
+                    "exclusiveMinimum": true,
+                    "minimum": 0
+                  },
+                  "weightLbs": {
+                    "type": "number",
+                    "exclusiveMinimum": true,
+                    "minimum": 0
+                  },
+                  "reps": {
+                    "type": "integer",
+                    "exclusiveMinimum": true,
+                    "minimum": 0
+                  },
+                  "rpe": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "sessionId",
+                  "prescriptionId",
+                  "setNumber",
+                  "weightLbs",
+                  "reps"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/log/{id}": {
+      "patch": {
+        "operationId": "logSetUpdate",
+        "summary": "PATCH /api/log/:id",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "set": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "sessionId": {
+                          "type": "string"
+                        },
+                        "prescriptionId": {
+                          "type": "string"
+                        },
+                        "setNumber": {
+                          "type": "integer"
+                        },
+                        "reps": {
+                          "type": "integer"
+                        },
+                        "weightLbs": {
+                          "type": "number"
+                        },
+                        "rpe": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "completedAt": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "sessionId",
+                        "prescriptionId",
+                        "setNumber",
+                        "reps",
+                        "weightLbs",
+                        "rpe",
+                        "completedAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "set"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "weightLbs": {
+                    "type": "number",
+                    "exclusiveMinimum": true,
+                    "minimum": 0
+                  },
+                  "reps": {
+                    "type": "integer",
+                    "exclusiveMinimum": true,
+                    "minimum": 0
+                  },
+                  "rpe": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "nullable": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "logSetDelete",
+        "summary": "DELETE /api/log/:id",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/session/complete": {
+      "post": {
+        "operationId": "sessionComplete",
+        "summary": "POST /api/session/complete",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "block": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "athleteId": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "phase": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "startDate": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "endDate": {
+                          "type": "string",
+                          "minLength": 1,
+                          "nullable": true
+                        },
+                        "weekCount": {
+                          "type": "integer"
+                        },
+                        "currentWeek": {
+                          "type": "integer"
+                        },
+                        "currentDay": {
+                          "type": "integer"
+                        },
+                        "templateId": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "athleteId",
+                        "name",
+                        "phase",
+                        "status",
+                        "startDate",
+                        "endDate",
+                        "weekCount",
+                        "currentWeek",
+                        "currentDay",
+                        "templateId",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "block"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sessionId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "sessionId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/athlete": {
+      "get": {
+        "operationId": "athleteGet",
+        "summary": "GET /api/athlete",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "athlete": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "userId": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "bodyweightLbs": {
+                          "type": "number"
+                        },
+                        "heightIn": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "experienceYrs": {
+                          "type": "number"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "userId",
+                        "name",
+                        "email",
+                        "bodyweightLbs",
+                        "heightIn",
+                        "experienceYrs",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "e1rms": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "athleteId": {
+                            "type": "string"
+                          },
+                          "exercise": {
+                            "type": "string"
+                          },
+                          "e1rmLbs": {
+                            "type": "number"
+                          },
+                          "method": {
+                            "type": "string"
+                          },
+                          "sourceWeight": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "sourceReps": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "recordedAt": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "athleteId",
+                          "exercise",
+                          "e1rmLbs",
+                          "method",
+                          "sourceWeight",
+                          "sourceReps",
+                          "recordedAt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "athlete",
+                    "e1rms"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "put": {
+        "operationId": "athleteUpdate",
+        "summary": "PUT /api/athlete",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "athlete": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "userId": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "bodyweightLbs": {
+                          "type": "number"
+                        },
+                        "heightIn": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "experienceYrs": {
+                          "type": "number"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "userId",
+                        "name",
+                        "email",
+                        "bodyweightLbs",
+                        "heightIn",
+                        "experienceYrs",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "athlete"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "bodyweightLbs": {
+                    "type": "number",
+                    "minimum": 50,
+                    "maximum": 600
+                  },
+                  "heightIn": {
+                    "type": "number",
+                    "minimum": 36,
+                    "maximum": 96,
+                    "nullable": true
+                  },
+                  "experienceYrs": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 60
+                  }
+                },
+                "required": [
+                  "name",
+                  "bodyweightLbs",
+                  "experienceYrs"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/block": {
+      "get": {
+        "operationId": "block",
+        "summary": "GET /api/block",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "block": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "athleteId": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "phase": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "weekCount": {
+                          "type": "integer"
+                        },
+                        "currentWeek": {
+                          "type": "integer"
+                        },
+                        "currentDay": {
+                          "type": "integer"
+                        },
+                        "startDate": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "endDate": {
+                          "type": "string",
+                          "minLength": 1,
+                          "nullable": true
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "sessions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "blockId": {
+                                "type": "string"
+                              },
+                              "weekNumber": {
+                                "type": "integer"
+                              },
+                              "dayNumber": {
+                                "type": "integer"
+                              },
+                              "scheduledDate": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "completedAt": {
+                                "type": "string",
+                                "minLength": 1,
+                                "nullable": true
+                              },
+                              "readinessScore": {
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "readinessCoeff": {
+                                "type": "number"
+                              },
+                              "autoRegNote": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "createdAt": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "prescriptions": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "sessionId": {
+                                      "type": "string"
+                                    },
+                                    "exerciseName": {
+                                      "type": "string"
+                                    },
+                                    "exerciseOrder": {
+                                      "type": "integer"
+                                    },
+                                    "prescribedSets": {
+                                      "type": "integer"
+                                    },
+                                    "prescribedReps": {
+                                      "type": "integer"
+                                    },
+                                    "prescribedRPE": {
+                                      "type": "number"
+                                    },
+                                    "percentOfE1RM": {
+                                      "type": "number",
+                                      "nullable": true
+                                    },
+                                    "targetWeightLbs": {
+                                      "type": "number",
+                                      "nullable": true
+                                    },
+                                    "isAccessory": {
+                                      "type": "boolean"
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "sessionId",
+                                    "exerciseName",
+                                    "exerciseOrder",
+                                    "prescribedSets",
+                                    "prescribedReps",
+                                    "prescribedRPE",
+                                    "percentOfE1RM",
+                                    "targetWeightLbs",
+                                    "isAccessory"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "completedSets": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "sessionId": {
+                                      "type": "string"
+                                    },
+                                    "prescriptionId": {
+                                      "type": "string"
+                                    },
+                                    "setNumber": {
+                                      "type": "integer"
+                                    },
+                                    "reps": {
+                                      "type": "integer"
+                                    },
+                                    "weightLbs": {
+                                      "type": "number"
+                                    },
+                                    "rpe": {
+                                      "type": "number",
+                                      "nullable": true
+                                    },
+                                    "completedAt": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "sessionId",
+                                    "prescriptionId",
+                                    "setNumber",
+                                    "reps",
+                                    "weightLbs",
+                                    "rpe",
+                                    "completedAt"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "blockId",
+                              "weekNumber",
+                              "dayNumber",
+                              "scheduledDate",
+                              "completedAt",
+                              "readinessScore",
+                              "readinessCoeff",
+                              "autoRegNote",
+                              "createdAt",
+                              "prescriptions",
+                              "completedSets"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "athleteId",
+                        "name",
+                        "phase",
+                        "status",
+                        "weekCount",
+                        "currentWeek",
+                        "currentDay",
+                        "startDate",
+                        "endDate",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
+                    "progress": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "block",
+                    "progress"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/fatigue": {
+      "get": {
+        "operationId": "fatigue",
+        "summary": "GET /api/fatigue",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "timeline": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": {
+                            "type": "string"
+                          },
+                          "fatigue": {
+                            "type": "number"
+                          },
+                          "recovery": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "date",
+                          "fatigue",
+                          "recovery"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "current": {
+                      "type": "object",
+                      "properties": {
+                        "fatigue": {
+                          "type": "number"
+                        },
+                        "recoveryDays": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "fatigue",
+                        "recoveryDays"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "timeline",
+                    "current"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/program": {
+      "get": {
+        "operationId": "programList",
+        "summary": "GET /api/program",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "templates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "athleteId": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "durationWeeks": {
+                            "type": "integer"
+                          },
+                          "phasesCount": {
+                            "type": "integer"
+                          },
+                          "source": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "phases": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "templateId": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "phaseType": {
+                                  "type": "string"
+                                },
+                                "weekCount": {
+                                  "type": "integer"
+                                },
+                                "order": {
+                                  "type": "integer"
+                                },
+                                "days": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string"
+                                      },
+                                      "phaseId": {
+                                        "type": "string"
+                                      },
+                                      "dayNumber": {
+                                        "type": "integer"
+                                      },
+                                      "label": {
+                                        "type": "string"
+                                      },
+                                      "muscleFocus": {
+                                        "type": "string",
+                                        "nullable": true
+                                      },
+                                      "exercises": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "type": "string"
+                                            },
+                                            "dayId": {
+                                              "type": "string"
+                                            },
+                                            "exerciseName": {
+                                              "type": "string"
+                                            },
+                                            "order": {
+                                              "type": "integer"
+                                            },
+                                            "sets": {
+                                              "type": "integer"
+                                            },
+                                            "reps": {
+                                              "type": "integer"
+                                            },
+                                            "rpe": {
+                                              "type": "number",
+                                              "nullable": true
+                                            },
+                                            "intensityPct": {
+                                              "type": "number",
+                                              "nullable": true
+                                            },
+                                            "isAccessory": {
+                                              "type": "boolean"
+                                            }
+                                          },
+                                          "required": [
+                                            "id",
+                                            "dayId",
+                                            "exerciseName",
+                                            "order",
+                                            "sets",
+                                            "reps",
+                                            "rpe",
+                                            "intensityPct",
+                                            "isAccessory"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      }
+                                    },
+                                    "required": [
+                                      "id",
+                                      "phaseId",
+                                      "dayNumber",
+                                      "label",
+                                      "muscleFocus"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "templateId",
+                                "name",
+                                "phaseType",
+                                "weekCount",
+                                "order"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "athleteId",
+                          "name",
+                          "durationWeeks",
+                          "phasesCount",
+                          "source",
+                          "createdAt",
+                          "updatedAt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "templates"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "post": {
+        "operationId": "programCreate",
+        "summary": "POST /api/program",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "template": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "athleteId": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "durationWeeks": {
+                          "type": "integer"
+                        },
+                        "phasesCount": {
+                          "type": "integer"
+                        },
+                        "source": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "phases": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "templateId": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "phaseType": {
+                                "type": "string"
+                              },
+                              "weekCount": {
+                                "type": "integer"
+                              },
+                              "order": {
+                                "type": "integer"
+                              },
+                              "days": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "phaseId": {
+                                      "type": "string"
+                                    },
+                                    "dayNumber": {
+                                      "type": "integer"
+                                    },
+                                    "label": {
+                                      "type": "string"
+                                    },
+                                    "muscleFocus": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "exercises": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string"
+                                          },
+                                          "dayId": {
+                                            "type": "string"
+                                          },
+                                          "exerciseName": {
+                                            "type": "string"
+                                          },
+                                          "order": {
+                                            "type": "integer"
+                                          },
+                                          "sets": {
+                                            "type": "integer"
+                                          },
+                                          "reps": {
+                                            "type": "integer"
+                                          },
+                                          "rpe": {
+                                            "type": "number",
+                                            "nullable": true
+                                          },
+                                          "intensityPct": {
+                                            "type": "number",
+                                            "nullable": true
+                                          },
+                                          "isAccessory": {
+                                            "type": "boolean"
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "dayId",
+                                          "exerciseName",
+                                          "order",
+                                          "sets",
+                                          "reps",
+                                          "rpe",
+                                          "intensityPct",
+                                          "isAccessory"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "phaseId",
+                                    "dayNumber",
+                                    "label",
+                                    "muscleFocus"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "templateId",
+                              "name",
+                              "phaseType",
+                              "weekCount",
+                              "order"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "athleteId",
+                        "name",
+                        "durationWeeks",
+                        "phasesCount",
+                        "source",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "template"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "durationWeeks": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 52
+                  },
+                  "phases": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "phaseType": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "weekCount": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 12
+                        },
+                        "days": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "dayNumber": {
+                                "type": "integer",
+                                "minimum": 1
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "muscleFocus": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "exercises": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "exerciseName": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "sets": {
+                                      "type": "integer",
+                                      "minimum": 1
+                                    },
+                                    "reps": {
+                                      "type": "integer",
+                                      "minimum": 1
+                                    },
+                                    "rpe": {
+                                      "type": "number",
+                                      "nullable": true
+                                    },
+                                    "percentOfE1RM": {
+                                      "type": "number",
+                                      "nullable": true
+                                    },
+                                    "isAccessory": {
+                                      "type": "boolean"
+                                    }
+                                  },
+                                  "required": [
+                                    "exerciseName",
+                                    "sets",
+                                    "reps"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "dayNumber",
+                              "label"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "phaseType",
+                        "weekCount"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "name",
+                  "durationWeeks",
+                  "phases"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
