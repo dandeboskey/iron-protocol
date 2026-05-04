@@ -11,6 +11,7 @@ forward to the package READMEs for local detail.
 |-----|--------------|
 | [`architecture.md`](architecture.md) | Before touching anything. System-wide design, data flow, smart-decision log, improvement opportunities. |
 | [`cross-platform-sharing.md`](cross-platform-sharing.md) | Before duplicating logic across web/mobile/watch. Inventories what's shared, what's correctly platform-specific, and the next sharing investments to make. |
+| [`background-jobs-research.md`](background-jobs-research.md) | Before introducing background workers. Compares Inngest, BullMQ, pg-boss, Trigger.dev, Vercel Cron. Recommends Inngest for event-driven + Vercel Cron for scheduled. |
 | [`qol-checklist.md`](qol-checklist.md) | Before doing UX work. Round-by-round ledger of QOL fixes shipped (rounds 1–3) — covers risk tags, what was skipped, and why. |
 | [`../CLAUDE.md`](../CLAUDE.md) | Project-level rules + persona. Note: it claims SQLite; the schema is actually Postgres. See `architecture.md` §4.4. |
 

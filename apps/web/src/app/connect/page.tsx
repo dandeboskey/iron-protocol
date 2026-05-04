@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/apiClient";
+import { getApiErrorMessage } from "@iron-protocol/api-client";
 
 interface DeviceConfig {
   name: string;
@@ -38,9 +40,11 @@ export default function ConnectPage() {
   });
   const [simulating, setSimulating] = useState<string | null>(null);
   const [oauthNotice, setOauthNotice] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
 
   async function simulateImport(source: string) {
     setSimulating(source);
+    setImportError(null);
     try {
       // Generate realistic mock data
       const mockData = {
@@ -54,21 +58,14 @@ export default function ConnectPage() {
         notes: `Simulated import from ${source.toUpperCase()}`,
       };
 
-      const res = await fetch("/api/biometric", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(mockData),
-      });
-
-      if (res.ok) {
-        setDevices((prev) => ({
-          ...prev,
-          [source]: { ...prev[source], status: "simulated" },
-        }));
-        setTimeout(() => router.push("/"), 1000);
-      }
+      await api.checkin.submit(mockData);
+      setDevices((prev) => ({
+        ...prev,
+        [source]: { ...prev[source], status: "simulated" },
+      }));
+      setTimeout(() => router.push("/"), 1000);
     } catch (err) {
-      console.error(err);
+      setImportError(getApiErrorMessage(err, "Simulated import failed."));
     } finally {
       setSimulating(null);
     }
@@ -87,6 +84,10 @@ export default function ConnectPage() {
       <p className="text-iron-400 text-sm">
         Connect your wearables to automatically import biometric data. Apple Health data flows through your connected devices.
       </p>
+
+      {importError && (
+        <p className="text-sm text-red-400 bg-red-950/40 border border-red-900 rounded px-3 py-2">{importError}</p>
+      )}
 
       <div className="space-y-4">
         {Object.entries(devices).map(([key, device]) => (

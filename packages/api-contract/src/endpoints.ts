@@ -27,6 +27,13 @@ import {
   AthleteUpdateRequestSchema,
   AthleteUpdateResponseSchema,
 } from "./schemas/athlete";
+import { BlockResponseSchema } from "./schemas/block";
+import { FatigueResponseSchema } from "./schemas/fatigue";
+import {
+  ProgramListResponseSchema,
+  ProgramCreateRequestSchema,
+  ProgramCreateResponseSchema,
+} from "./schemas/program";
 
 /**
  * Logical endpoint registry. Each entry pairs an HTTP method + path template
@@ -120,6 +127,30 @@ export const endpoints = {
     path: "/api/athlete",
     request: AthleteUpdateRequestSchema,
     response: AthleteUpdateResponseSchema,
+  },
+  block: {
+    method: "GET",
+    path: "/api/block",
+    request: null,
+    response: BlockResponseSchema,
+  },
+  fatigue: {
+    method: "GET",
+    path: "/api/fatigue",
+    request: null,
+    response: FatigueResponseSchema,
+  },
+  programList: {
+    method: "GET",
+    path: "/api/program",
+    request: null,
+    response: ProgramListResponseSchema,
+  },
+  programCreate: {
+    method: "POST",
+    path: "/api/program",
+    request: ProgramCreateRequestSchema,
+    response: ProgramCreateResponseSchema,
   },
 } as const;
 

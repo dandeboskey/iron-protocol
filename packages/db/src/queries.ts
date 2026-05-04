@@ -1,5 +1,15 @@
 import { prisma } from "./index";
 
+/**
+ * Look up an Athlete by the linked NextAuth `User.id`. This is the only
+ * session-aware primitive the db package exposes — the `getSessionAthlete`
+ * helper that resolves session/bearer tokens lives in `apps/web/src/lib/auth`
+ * because NextAuth is an app-layer concern.
+ */
+export async function getAthleteByUserId(userId: string) {
+  return prisma.athlete.findUnique({ where: { userId } });
+}
+
 /** Get athlete by ID with all relations */
 export async function getAthleteWithBlock(athleteId: string) {
   return prisma.athlete.findUnique({

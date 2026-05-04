@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSessionAthlete } from "@/lib/getSessionAthlete";
+import { getSessionAthlete } from "@/lib/auth";
 import { getTrailingBiometrics, createBiometricEntry, getAllLatestE1RMs } from "@iron-protocol/db/queries";
 import { calculateReadiness, calculateHrvBaseline } from "@iron-protocol/core-logic";
 import type { BiometricSnapshot, AthleteProfile } from "@iron-protocol/core-logic";

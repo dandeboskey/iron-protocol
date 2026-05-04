@@ -35,9 +35,9 @@ lookups but is a signal you should extract.
 - Imports `@prisma/client` only. Nothing else from this monorepo.
 - This package **does not call core-logic**. The route handlers that consume
   both call core-logic with data fetched through this package.
-- This package **does not know about NextAuth**. The `getSessionAthlete`
-  helper currently lives here for historical reasons; it should move to
-  `apps/web/src/lib/auth.ts` (see architecture doc §8.7).
+- This package **does not know about NextAuth**. The session-aware
+  `getSessionAthlete` helper lives in `apps/web/src/lib/auth.ts`; this
+  package only exposes the lookup primitive `getAthleteByUserId(userId)`.
 
 ## Schema groups
 

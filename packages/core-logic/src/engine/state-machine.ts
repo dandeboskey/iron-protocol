@@ -1,4 +1,5 @@
 import type { Phase, BlockState, BlockTransition } from "../types";
+import { PROTOCOL } from "@iron-protocol/api-contract";
 
 /**
  * Block Periodization State Machine.
@@ -9,17 +10,23 @@ import type { Phase, BlockState, BlockTransition } from "../types";
  * Transition triggers:
  *   - Week count exhausted for current phase
  *   - Manual override (coach/athlete decision)
- *   - Emergency deload (readiness critically low for 3+ consecutive days)
+ *   - Emergency deload (readiness critically low for N+ consecutive days)
+ *     where N = PROTOCOL.emergencyDeloadConsecutiveLowDays.
+ *
+ * Phase week defaults read from `PROTOCOL.phases` so other platforms can
+ * preview "if you start now, deload week is in X days" without re-encoding.
  */
 
 const PHASE_ORDER: Phase[] = ["HYPERTROPHY", "STRENGTH", "PEAKING", "DELOAD"];
 
 const DEFAULT_WEEK_COUNTS: Record<Phase, number> = {
-  HYPERTROPHY: 4,
-  STRENGTH: 4,
-  PEAKING: 3,
-  DELOAD: 1,
+  HYPERTROPHY: PROTOCOL.phases.HYPERTROPHY.weeks,
+  STRENGTH: PROTOCOL.phases.STRENGTH.weeks,
+  PEAKING: PROTOCOL.phases.PEAKING.weeks,
+  DELOAD: PROTOCOL.phases.DELOAD.weeks,
 };
+
+const EMERGENCY_DELOAD_THRESHOLD = PROTOCOL.emergencyDeloadConsecutiveLowDays;
 
 /**
  * Evaluate whether a block should transition to the next phase.
@@ -28,9 +35,9 @@ export function evaluateTransition(
   state: BlockState,
   consecutiveLowReadinessDays: number = 0
 ): BlockTransition {
-  // Emergency deload: 3+ consecutive days with critically low readiness
+  // Emergency deload: N+ consecutive days with critically low readiness
   if (
-    consecutiveLowReadinessDays >= 3 &&
+    consecutiveLowReadinessDays >= EMERGENCY_DELOAD_THRESHOLD &&
     state.phase !== "DELOAD"
   ) {
     return {
