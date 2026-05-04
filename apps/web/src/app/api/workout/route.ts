@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSessionAthlete } from "@/lib/getSessionAthlete";
+import { getSessionAthlete } from "@/lib/auth";
 import { prisma } from "@iron-protocol/db";
 import { getAthleteWithBlock, getTrailingBiometrics, getAllLatestE1RMs, getTodaySession } from "@iron-protocol/db/queries";
 import {

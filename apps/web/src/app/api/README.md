@@ -13,7 +13,7 @@ Every handler follows the same pattern:
 
 ```ts
 import { NextRequest, NextResponse } from "next/server";
-import { getSessionAthlete } from "@iron-protocol/db/queries";
+import { getSessionAthlete } from "@/lib/auth";
 import { prisma } from "@iron-protocol/db";
 import { SomeRequestSchema } from "@iron-protocol/api-contract";
 
@@ -153,6 +153,7 @@ This single helper is the entire auth model. It:
    never see an empty-onboarding state.
 4. Returns the `Athlete` or `null`.
 
-It currently lives in `@iron-protocol/db/queries`. That's a layering
-violation (db shouldn't know about NextAuth) — see architecture doc §8.7
-for the planned move.
+It lives in `apps/web/src/lib/auth.ts` (next to `authOptions`) and calls
+the lookup primitive `getAthleteByUserId(userId)` exposed by
+`@iron-protocol/db/queries`. The db package itself stays free of
+NextAuth — this is the architecture-doc §8.7 layering fix.

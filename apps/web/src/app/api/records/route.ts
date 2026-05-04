@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSessionAthlete } from "@/lib/getSessionAthlete";
+import { getSessionAthlete } from "@/lib/auth";
 import { getLatestPRs, upsertPersonalRecord } from "@iron-protocol/db/queries";
 
 export async function GET() {
