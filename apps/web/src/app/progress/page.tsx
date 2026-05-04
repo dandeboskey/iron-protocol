@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { formatMonthDay, formatWeight } from "@/lib/format";
+import { api } from "@/lib/apiClient";
+import { getApiErrorMessage } from "@iron-protocol/api-client";
+import type {
+  E1RMRecord,
+  FatigueResponse,
+} from "@iron-protocol/api-contract";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -15,7 +21,13 @@ import {
 
 const BIG_THREE = ["Squat", "Bench Press", "Deadlift"];
 
-function FatigueChart({ timeline, current }: { timeline: any[]; current: any }) {
+function FatigueChart({
+  timeline,
+  current,
+}: {
+  timeline: FatigueResponse["timeline"];
+  current: FatigueResponse["current"];
+}) {
   const fatigueColor =
     current.fatigue >= 60 ? "#ef4444" : current.fatigue >= 30 ? "#eab308" : "#22c55e";
 
@@ -93,20 +105,23 @@ function FatigueChart({ timeline, current }: { timeline: any[]; current: any }) 
 }
 
 export default function ProgressPage() {
-  const [e1rmHistory, setE1rmHistory] = useState<any[]>([]);
-  const [fatigueData, setFatigueData] = useState<any>(null);
+  const [e1rmHistory, setE1rmHistory] = useState<E1RMRecord[]>([]);
+  const [fatigueData, setFatigueData] = useState<FatigueResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/athlete").then((r) => r.json()),
-      fetch("/api/fatigue").then((r) => r.json()),
+      api.athlete.get(),
+      // Fatigue tolerates failure independently — an athlete with no completed
+      // sessions still gets a useful e1RM view; we just hide the chart.
+      api.fatigue.get().catch(() => null),
     ])
       .then(([athleteData, fatigue]) => {
-        setE1rmHistory(athleteData.e1rms || []);
-        if (!fatigue.error) setFatigueData(fatigue);
+        setE1rmHistory(athleteData.e1rms);
+        setFatigueData(fatigue);
       })
-      .catch(console.error)
+      .catch((err) => setError(getApiErrorMessage(err, "Failed to load progress.")))
       .finally(() => setLoading(false));
   }, []);
 
@@ -114,15 +129,19 @@ export default function ProgressPage() {
     return <div className="flex items-center justify-center h-64"><div className="text-iron-500">Loading...</div></div>;
   }
 
-  const grouped = e1rmHistory.reduce((acc: Record<string, any[]>, r: any) => {
+  const grouped = e1rmHistory.reduce((acc, r) => {
     if (!acc[r.exercise]) acc[r.exercise] = [];
     acc[r.exercise].push(r);
     return acc;
-  }, {});
+  }, {} as Record<string, E1RMRecord[]>);
 
   return (
     <div className="pb-20 md:pb-6 space-y-6">
       <h1 className="text-2xl font-bold">Progressive Overload</h1>
+
+      {error && (
+        <p className="text-sm text-red-400 bg-red-950/40 border border-red-900 rounded px-3 py-2">{error}</p>
+      )}
 
       {/* Banister Fatigue Chart */}
       {fatigueData && (
@@ -163,14 +182,14 @@ export default function ProgressPage() {
           return a.localeCompare(b);
         })
         .map(([exercise, records]) => {
-          const maxE1rm = Math.max(...records.map((r: any) => r.e1rmLbs));
+          const maxE1rm = Math.max(...records.map((r) => r.e1rmLbs));
           return (
             <div key={exercise} className="card">
               <h3 className="font-semibold text-lg mb-3">{exercise}</h3>
 
               {/* Mini bar chart */}
               <div className="flex items-end gap-1 h-24 mb-3">
-                {records.slice(0, 20).reverse().map((r: any, i: number) => {
+                {records.slice(0, 20).reverse().map((r, i) => {
                   const height = maxE1rm > 0 ? (r.e1rmLbs / maxE1rm) * 100 : 0;
                   return (
                     <div key={i} className="flex-1 min-w-[4px] group relative">
@@ -188,7 +207,7 @@ export default function ProgressPage() {
 
               {/* Recent entries */}
               <div className="space-y-1">
-                {records.slice(0, 5).map((r: any) => (
+                {records.slice(0, 5).map((r) => (
                   <div key={r.id} className="flex justify-between text-sm py-1 border-b border-iron-800 last:border-0">
                     <span className="text-iron-400">
                       {formatMonthDay(r.recordedAt)}
