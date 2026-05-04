@@ -2,13 +2,22 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { api } from "@/lib/apiClient";
+import { getApiErrorMessage } from "@iron-protocol/api-client";
+import type {
+  Athlete,
+  BiometricEntry,
+  Readiness,
+  ActiveBlock,
+  WorkoutResponse,
+} from "@iron-protocol/api-contract";
 
 interface DashboardData {
-  athlete: any;
-  readiness: any;
-  block: any;
-  workout: any;
-  biometricEntries: any[];
+  athlete: Athlete | null;
+  readiness: Readiness | null;
+  block: ActiveBlock | null;
+  workout: WorkoutResponse | null;
+  biometricEntries: BiometricEntry[];
 }
 
 function ReadinessGauge({ score, coefficient }: { score: number; coefficient: number }) {
@@ -53,30 +62,30 @@ function PhaseBadge({ phase }: { phase: string }) {
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchAll() {
       try {
-        const [athleteRes, bioRes, blockRes, workoutRes] = await Promise.all([
-          fetch("/api/athlete"),
-          fetch("/api/biometric"),
-          fetch("/api/block"),
-          fetch("/api/workout"),
+        // Workout returns 404 when no active block exists; tolerate that without
+        // dropping the rest of the dashboard. Same pattern for an athlete who
+        // hasn't checked in yet — readiness is just null.
+        const [athlete, bio, block, workout] = await Promise.all([
+          api.athlete.get(),
+          api.dashboard.get(),
+          api.block.get(),
+          api.workout.today().catch(() => null),
         ]);
-        const athlete = await athleteRes.json();
-        const bio = await bioRes.json();
-        const block = await blockRes.json();
-        const workout = await workoutRes.json();
 
         setData({
           athlete: athlete.athlete,
           readiness: bio.readiness,
           block: block.block,
           workout,
-          biometricEntries: bio.entries || [],
+          biometricEntries: bio.entries,
         });
       } catch (e) {
-        console.error("Dashboard fetch error:", e);
+        setError(getApiErrorMessage(e, "Failed to load dashboard."));
       } finally {
         setLoading(false);
       }
@@ -88,6 +97,15 @@ export default function Dashboard() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-iron-500 text-lg">Loading Iron Protocol...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="card text-center py-12">
+        <p className="text-red-400 mb-4">{error}</p>
+        <Link href="/profile" className="btn-primary">Set Up Profile</Link>
       </div>
     );
   }
@@ -125,9 +143,9 @@ export default function Dashboard() {
               <Link href="/checkin" className="btn-primary">Check In Now</Link>
             </div>
           )}
-          {data.readiness?.flags?.length > 0 && (
+          {data.readiness && data.readiness.flags.length > 0 && (
             <div className="mt-4 space-y-1">
-              {data.readiness.flags.map((f: string, i: number) => (
+              {data.readiness.flags.map((f, i) => (
                 <p key={i} className="text-xs text-amber-400/80 text-center">{f}</p>
               ))}
             </div>
@@ -172,7 +190,7 @@ export default function Dashboard() {
         {data.workout?.regulated ? (
           <>
             <div className="space-y-2">
-              {data.workout.regulated.slice(0, 4).map((ex: any, i: number) => (
+              {data.workout.regulated.slice(0, 4).map((ex, i) => (
                 <div key={i} className="flex items-center justify-between py-2 border-b border-iron-800 last:border-0">
                   <div>
                     <p className="font-medium">{ex.exerciseName}</p>
