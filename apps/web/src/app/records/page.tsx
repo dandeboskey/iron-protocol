@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { formatMonthDay, formatShortDate, formatWeight } from "@/lib/format";
+import { api } from "@/lib/apiClient";
+import { getApiErrorMessage } from "@iron-protocol/api-client";
+import type { PersonalRecord } from "@iron-protocol/api-contract";
 
 const BIG_THREE = ["Squat", "Bench Press", "Deadlift"];
 const COMMON_EXERCISES = [
@@ -11,15 +14,10 @@ const COMMON_EXERCISES = [
 ];
 const RECORD_TYPES = ["1RM", "3RM", "5RM", "MAX_REPS"];
 
-interface PR {
-  id: string;
-  exerciseName: string;
-  recordType: string;
-  weightLbs: number;
-  reps: number;
-  achievedAt: string;
-  notes: string | null;
-}
+// PR is the wire-format type from the api-contract. The legacy local interface
+// included a `notes` field that the schema/route don't actually persist; keep
+// the client honest by using the contract type directly.
+type PR = PersonalRecord;
 
 interface EditDraft {
   exerciseName: string;
@@ -49,10 +47,10 @@ export default function RecordsPage() {
   });
 
   useEffect(() => {
-    fetch("/api/records")
-      .then((r) => r.json())
-      .then((data) => setRecords(data.records || []))
-      .catch(console.error)
+    api.records
+      .list()
+      .then((data) => setRecords(data.records))
+      .catch((err) => console.error(getApiErrorMessage(err, "Failed to load records")))
       .finally(() => setLoading(false));
   }, []);
 
@@ -77,25 +75,21 @@ export default function RecordsPage() {
         return;
       }
 
-      const res = await fetch("/api/records", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      try {
+        const data = await api.records.create({
           exerciseName,
           recordType: form.recordType,
           weightLbs: weight,
           reps,
           notes: form.notes || null,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setFormError(data.error || "Failed to save record.");
+        });
+        setRecords((prev) => [data.record, ...prev]);
+        setShowForm(false);
+        setForm({ exercise: "Squat", customExercise: "", recordType: "1RM", weightLbs: "", reps: "1", notes: "" });
+      } catch (err) {
+        setFormError(getApiErrorMessage(err, "Failed to save record."));
         return;
       }
-      setRecords((prev) => [data.record, ...prev]);
-      setShowForm(false);
-      setForm({ exercise: "Squat", customExercise: "", recordType: "1RM", weightLbs: "", reps: "1", notes: "" });
     } catch (err) {
       console.error(err);
       setFormError("Network error. Please try again.");
@@ -111,7 +105,7 @@ export default function RecordsPage() {
       exerciseName: r.exerciseName,
       recordType: r.recordType,
       weightLbs: String(r.weightLbs),
-      reps: String(r.reps),
+      reps: r.reps != null ? String(r.reps) : "1",
     });
   }
 
@@ -142,26 +136,16 @@ export default function RecordsPage() {
     setBusyId(id);
     setEditError(null);
     try {
-      const res = await fetch(`/api/records/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          exerciseName: name,
-          recordType: editDraft.recordType,
-          weightLbs: weight,
-          reps,
-        }),
+      const data = await api.records.update(id, {
+        exerciseName: name,
+        recordType: editDraft.recordType,
+        weightLbs: weight,
+        reps,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setEditError(data.error || "Update failed.");
-        return;
-      }
       setRecords((prev) => prev.map((r) => (r.id === id ? { ...r, ...data.record } : r)));
       cancelEdit();
     } catch (err) {
-      console.error(err);
-      setEditError("Network error. Please try again.");
+      setEditError(getApiErrorMessage(err, "Update failed."));
     } finally {
       setBusyId(null);
     }
@@ -170,13 +154,11 @@ export default function RecordsPage() {
   async function confirmDelete(id: string) {
     setBusyId(id);
     try {
-      const res = await fetch(`/api/records/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setRecords((prev) => prev.filter((r) => r.id !== id));
-        setPendingDelete(null);
-      }
+      await api.records.delete(id);
+      setRecords((prev) => prev.filter((r) => r.id !== id));
+      setPendingDelete(null);
     } catch (err) {
-      console.error(err);
+      console.error(getApiErrorMessage(err, "Delete failed"));
     } finally {
       setBusyId(null);
     }
@@ -405,7 +387,7 @@ export default function RecordsPage() {
                       <span className="badge bg-iron-800 text-iron-300 border border-iron-700">{r.recordType}</span>
                       <span className="text-xl font-mono font-bold">{r.weightLbs}</span>
                       <span className="text-iron-400 text-sm">lbs</span>
-                      {r.reps > 1 && <span className="text-iron-500 text-sm">&times; {r.reps}</span>}
+                      {r.reps != null && r.reps > 1 && <span className="text-iron-500 text-sm">&times; {r.reps}</span>}
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-iron-500 hidden sm:inline">

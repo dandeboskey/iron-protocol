@@ -1,0 +1,22 @@
+# @iron-protocol/api-contract — boundary rules
+
+This package is the SINGLE SOURCE OF TRUTH for HTTP API request/response shapes
+shared between apps/web (server + client), apps/mobile, and the future
+apps/watch (Swift hand-mirrored types).
+
+## Imports allowed
+- `zod` only.
+
+## Imports forbidden
+- `@iron-protocol/db` (Prisma types leak schema concerns into the wire format)
+- `@iron-protocol/core-logic` (would couple wire format to engine internals)
+- `@iron-protocol/integrations`
+- Anything from `apps/*`
+- Anything Node-only (`fs`, `path`, `process`, server runtimes, etc.)
+
+## Conventions
+- Every endpoint exports a Zod schema for request body (when applicable),
+  response body, and an inferred TS type.
+- Any schema that the watchOS app must mirror gets a Swift correspondence
+  comment so the Swift `Codable` types can be kept in sync by hand.
+- Never put validation logic that depends on env or DB here.

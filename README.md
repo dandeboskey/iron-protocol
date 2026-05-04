@@ -6,8 +6,26 @@ Built for elite-level athletes where CNS fatigue is exponential and Maximum Reco
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-14-black)
-![Prisma](https://img.shields.io/badge/Prisma-SQLite-2D3748)
+![Prisma](https://img.shields.io/badge/Prisma-Postgres-2D3748)
 ![License](https://img.shields.io/badge/license-MIT-green)
+
+---
+
+## Documentation
+
+- **[`docs/architecture.md`](docs/architecture.md)** — full system design (read first)
+- **[`docs/qol-checklist.md`](docs/qol-checklist.md)** — UX-fix ledger (rounds 1–3)
+- **[`docs/README.md`](docs/README.md)** — documentation index
+
+Each package and app also has its own README with local conventions:
+[`packages/api-contract`](packages/api-contract/README.md) ·
+[`packages/api-client`](packages/api-client/README.md) ·
+[`packages/core-logic`](packages/core-logic/README.md) ·
+[`packages/db`](packages/db/README.md) ·
+[`packages/integrations`](packages/integrations/README.md) ·
+[`apps/web`](apps/web/README.md) ·
+[`apps/web/src/app/api`](apps/web/src/app/api/README.md) ·
+[`apps/watch`](apps/watch/README.md)
 
 ---
 
@@ -18,8 +36,12 @@ Iron Protocol is a strict monorepo with enforced domain boundaries:
 ```
 iron-protocol/
 ├── apps/
-│   └── web/                    # Next.js 14 App Router — UI & API gateway
+│   ├── web/                    # Next.js 14 App Router — UI & API gateway
+│   ├── mobile/                 # Expo React Native iOS app
+│   └── watch/                  # Standalone watchOS 10+ SwiftUI app
 ├── packages/
+│   ├── api-contract/           # Zod schemas — single source of API truth
+│   ├── api-client/             # Typed TS client driven by api-contract
 │   ├── core-logic/             # Pure math engine — zero side effects
 │   ├── db/                     # Prisma schema, client, data-access queries
 │   └── integrations/           # Biometric API adapters (Oura, WHOOP stubs)
@@ -122,7 +144,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run setup` | Full install + DB push + seed |
 | `npm run dev` | Start Next.js dev server on :3000 |
 | `npm run build` | Production build |
-| `npm run db:push` | Push Prisma schema to SQLite |
+| `npm run db:push` | Push Prisma schema to Postgres |
 | `npm run db:seed` | Seed the database |
 | `npm run db:studio` | Open Prisma Studio GUI |
 
@@ -147,7 +169,7 @@ The UI is optimized for gym use: dark theme, high contrast, large touch targets,
 
 - **Runtime:** Node.js, TypeScript 5.4
 - **Frontend:** Next.js 14 (App Router), React 18, Tailwind CSS
-- **Database:** SQLite via Prisma ORM
+- **Database:** Postgres via Prisma ORM
 - **Charts:** Recharts (available, not yet wired)
 - **Monorepo:** npm workspaces
 

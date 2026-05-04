@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/apiClient";
+import { getApiErrorMessage } from "@iron-protocol/api-client";
 
 function SliderField({
   label,
@@ -80,10 +82,10 @@ export default function CheckInPage() {
   });
 
   useEffect(() => {
-    fetch("/api/biometric")
-      .then((r) => r.json())
+    api.dashboard
+      .get()
       .then((data) => {
-        const entries = data.entries || [];
+        const entries = data.entries;
         if (entries.length > 0 && isToday(entries[0].date)) {
           setAlreadyCheckedIn(true);
         }
@@ -108,30 +110,21 @@ export default function CheckInPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/biometric", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          hrvMs: hrv,
-          sleepHours: sleep,
-          sleepQuality: form.sleepQuality,
-          mood: form.mood,
-          soreness: form.soreness,
-          energy: form.energy,
-          stress: form.stress,
-          notes: form.notes || null,
-        }),
+      await api.checkin.submit({
+        hrvMs: hrv,
+        sleepHours: sleep,
+        sleepQuality: form.sleepQuality,
+        mood: form.mood,
+        soreness: form.soreness,
+        energy: form.energy,
+        stress: form.stress,
+        notes: form.notes || null,
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error || "Submission failed. Please try again.");
-        return;
-      }
       setSubmitted(true);
       setTimeout(() => router.push("/"), 1500);
     } catch (err) {
       console.error("Check-in error:", err);
-      setError("Network error. Please try again.");
+      setError(getApiErrorMessage(err) || "Network error. Please try again.");
     } finally {
       setSubmitting(false);
     }
