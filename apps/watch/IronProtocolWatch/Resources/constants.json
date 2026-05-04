@@ -1,0 +1,25 @@
+{
+  "readinessTiers": {
+    "boost":   { "minRc": 1.05, "intensityDelta": 0.025 },
+    "normal":  { "minRc": 0.95, "maxRc": 1.05 },
+    "reduce":  { "minRc": 0.85, "maxRc": 0.95, "setDelta": -1, "rpeDelta": -0.5 },
+    "regress": { "minRc": 0.75, "maxRc": 0.85, "setDelta": -2, "intensityDelta": -0.05, "rpeDelta": -1.0 },
+    "deload":  { "maxRc": 0.75, "volumeFactor": 0.5 }
+  },
+  "mrvScale": [
+    { "bwRatio": 1.5, "factor": 1.0 },
+    { "bwRatio": 2.0, "factor": 0.95 },
+    { "bwRatio": 2.5, "factor": 0.88 },
+    { "bwRatio": 3.0, "factor": 0.8 },
+    { "bwRatio": 3.5, "factor": 0.72 },
+    { "bwRatio": 999, "factor": 0.65 }
+  ],
+  "phases": {
+    "HYPERTROPHY": { "weeks": 4 },
+    "STRENGTH":    { "weeks": 4 },
+    "PEAKING":     { "weeks": 3 },
+    "DELOAD":      { "weeks": 1 }
+  },
+  "e1rmRepCap": 12,
+  "emergencyDeloadConsecutiveLowDays": 3
+}
