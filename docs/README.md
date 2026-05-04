@@ -10,6 +10,7 @@ forward to the package READMEs for local detail.
 | Doc | When to read |
 |-----|--------------|
 | [`architecture.md`](architecture.md) | Before touching anything. System-wide design, data flow, smart-decision log, improvement opportunities. |
+| [`cross-platform-sharing.md`](cross-platform-sharing.md) | Before duplicating logic across web/mobile/watch. Inventories what's shared, what's correctly platform-specific, and the next sharing investments to make. |
 | [`qol-checklist.md`](qol-checklist.md) | Before doing UX work. Round-by-round ledger of QOL fixes shipped (rounds 1–3) — covers risk tags, what was skipped, and why. |
 | [`../CLAUDE.md`](../CLAUDE.md) | Project-level rules + persona. Note: it claims SQLite; the schema is actually Postgres. See `architecture.md` §4.4. |
 
