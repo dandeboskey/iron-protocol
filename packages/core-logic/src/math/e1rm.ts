@@ -1,3 +1,5 @@
+import { PROTOCOL } from "@iron-protocol/api-contract";
+
 /**
  * Estimated 1-Rep Max calculations.
  * Primary: Epley formula. Secondary: Brzycki for low-rep validation.
@@ -5,10 +7,11 @@
  * Epley: e1RM = weight × (1 + reps / 30)
  * Brzycki: e1RM = weight × 36 / (37 - reps)
  *
- * Both degrade past ~10 reps. We cap at 12 for reliability.
+ * Both degrade past ~10 reps. The cap (default 12) lives in
+ * `PROTOCOL.e1rmRepCap` so all platforms agree.
  */
 
-const MAX_RELIABLE_REPS = 12;
+const MAX_RELIABLE_REPS = PROTOCOL.e1rmRepCap;
 
 /** Epley e1RM estimate */
 export function epleyE1RM(weight: number, reps: number): number {

@@ -1,5 +1,6 @@
 import type { Phase, PhaseConfig, VolumeMetrics } from "../types";
 import { exerciseINOL } from "./e1rm";
+import { PROTOCOL } from "@iron-protocol/api-contract";
 
 /**
  * Phase-specific training parameters.
@@ -7,11 +8,16 @@ import { exerciseINOL } from "./e1rm";
  *
  * MEV = Minimum Effective Volume (weekly sets per muscle group)
  * MRV = Maximum Recoverable Volume (weekly sets per muscle group)
+ *
+ * Week counts read from `PROTOCOL.phases` (shared JSON in api-contract) so
+ * web/mobile/watch + this engine all rebalance from one source. Rep / RPE /
+ * intensity ranges and per-muscle-group volume targets remain local because
+ * they are engine-internal — clients display whatever the engine returns.
  */
 export const PHASE_CONFIGS: Record<Phase, PhaseConfig> = {
   HYPERTROPHY: {
     phase: "HYPERTROPHY",
-    weekCount: 4,
+    weekCount: PROTOCOL.phases.HYPERTROPHY.weeks,
     repRange: [6, 12],
     rpeRange: [6.5, 8.0],
     intensityRange: [0.60, 0.75],
@@ -20,7 +26,7 @@ export const PHASE_CONFIGS: Record<Phase, PhaseConfig> = {
   },
   STRENGTH: {
     phase: "STRENGTH",
-    weekCount: 4,
+    weekCount: PROTOCOL.phases.STRENGTH.weeks,
     repRange: [3, 6],
     rpeRange: [7.0, 8.5],
     intensityRange: [0.75, 0.88],
@@ -29,7 +35,7 @@ export const PHASE_CONFIGS: Record<Phase, PhaseConfig> = {
   },
   PEAKING: {
     phase: "PEAKING",
-    weekCount: 3,
+    weekCount: PROTOCOL.phases.PEAKING.weeks,
     repRange: [1, 3],
     rpeRange: [8.0, 9.5],
     intensityRange: [0.88, 0.97],
@@ -38,7 +44,7 @@ export const PHASE_CONFIGS: Record<Phase, PhaseConfig> = {
   },
   DELOAD: {
     phase: "DELOAD",
-    weekCount: 1,
+    weekCount: PROTOCOL.phases.DELOAD.weeks,
     repRange: [5, 8],
     rpeRange: [5.0, 6.5],
     intensityRange: [0.50, 0.65],
@@ -89,6 +95,11 @@ export function calculateSessionVolume(
  *
  * A 195lb lifter squatting 500+ has substantially lower MRV
  * than a 195lb lifter squatting 315.
+ *
+ * The breakpoints + factors come from `PROTOCOL.mrvScale` (api-contract JSON)
+ * so the watch's "explain my readiness" view will read the same numbers.
+ * The first entry whose `bwRatio` is >= the athlete's ratio wins; the last
+ * entry uses a sentinel (999) to act as the open-ended elite tier.
  */
 export function scaledMRV(
   baseMRV: number,
@@ -96,23 +107,11 @@ export function scaledMRV(
   bodyweightLbs: number
 ): number {
   const ratio = e1rm / bodyweightLbs;
-  let scaleFactor: number;
-
-  if (ratio <= 1.5) {
-    scaleFactor = 1.0; // novice: full MRV
-  } else if (ratio <= 2.0) {
-    scaleFactor = 0.95;
-  } else if (ratio <= 2.5) {
-    scaleFactor = 0.88;
-  } else if (ratio <= 3.0) {
-    scaleFactor = 0.80;
-  } else if (ratio <= 3.5) {
-    scaleFactor = 0.72;
-  } else {
-    scaleFactor = 0.65; // 3.5x+ BW: MRV drops 35%
-  }
-
-  return Math.round(baseMRV * scaleFactor);
+  // Pick the first tier whose upper-bound ratio still includes us.
+  const tier =
+    PROTOCOL.mrvScale.find((t) => ratio <= t.bwRatio) ??
+    PROTOCOL.mrvScale[PROTOCOL.mrvScale.length - 1];
+  return Math.round(baseMRV * tier.factor);
 }
 
 /**
