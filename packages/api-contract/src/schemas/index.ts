@@ -6,3 +6,6 @@ export * from "./log";
 export * from "./session";
 export * from "./checkin";
 export * from "./athlete";
+export * from "./block";
+export * from "./fatigue";
+export * from "./program";

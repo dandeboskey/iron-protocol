@@ -19,6 +19,11 @@ import {
   AthleteGetResponseSchema,
   AthleteUpdateRequestSchema,
   AthleteUpdateResponseSchema,
+  BlockResponseSchema,
+  FatigueResponseSchema,
+  ProgramListResponseSchema,
+  ProgramCreateRequestSchema,
+  ProgramCreateResponseSchema,
   type RecordsListResponse,
   type RecordCreateRequest,
   type RecordUpdateRequest,
@@ -37,6 +42,11 @@ import {
   type AthleteGetResponse,
   type AthleteUpdateRequest,
   type AthleteUpdateResponse,
+  type BlockResponse,
+  type FatigueResponse,
+  type ProgramListResponse,
+  type ProgramCreateRequest,
+  type ProgramCreateResponse,
 } from "@iron-protocol/api-contract";
 import { createTransport, type TransportOptions } from "./transport";
 
@@ -208,6 +218,48 @@ export function createApiClient(options: TransportOptions) {
             body: parsed,
           },
           AthleteUpdateResponseSchema
+        );
+      },
+    },
+    block: {
+      /** GET /api/block — current active block + macrocycle progress. */
+      get(): Promise<BlockResponse> {
+        return t.request(
+          { method: endpoints.block.method, path: endpoints.block.path },
+          BlockResponseSchema
+        );
+      },
+    },
+    fatigue: {
+      /** GET /api/fatigue — 28-day Banister fatigue series for charts. */
+      get(): Promise<FatigueResponse> {
+        return t.request(
+          { method: endpoints.fatigue.method, path: endpoints.fatigue.path },
+          FatigueResponseSchema
+        );
+      },
+    },
+    program: {
+      /** GET /api/program — list templates owned by the current athlete. */
+      list(): Promise<ProgramListResponse> {
+        return t.request(
+          { method: endpoints.programList.method, path: endpoints.programList.path },
+          ProgramListResponseSchema
+        );
+      },
+      /**
+       * POST /api/program — create a template with its full phase/day/exercise
+       * graph. Validates the wizard's nested payload before sending.
+       */
+      create(body: ProgramCreateRequest): Promise<ProgramCreateResponse> {
+        const parsed = ProgramCreateRequestSchema.parse(body);
+        return t.request(
+          {
+            method: endpoints.programCreate.method,
+            path: endpoints.programCreate.path,
+            body: parsed,
+          },
+          ProgramCreateResponseSchema
         );
       },
     },
